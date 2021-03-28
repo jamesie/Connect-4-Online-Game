@@ -74,3 +74,8 @@ typings/
 
 # FuseBox cache
 .fusebox/
+
+**/node_modules
+node_modules
+**/dist
+dist
