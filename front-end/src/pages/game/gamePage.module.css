@@ -44,6 +44,11 @@
 }
 
 .borderer{
-  padding-right: 2vh;
-  padding-left: 2vh;
+  padding-right: 1vw;
+  padding-left: 1vw;
+}
+
+.classname{
+  background-color: red;
+  width: 100%;
 }
