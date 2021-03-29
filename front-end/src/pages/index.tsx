@@ -1,7 +1,6 @@
 import React from "react";
 import Grid from "@material-ui/core/Grid";
 import { Button, Paper, TextField, Box } from "@material-ui/core";
-//@ts-ignore
 import styles from "./index.module.css";
 
 interface indexProps {}

@@ -1,0 +1,49 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
+
+.board {
+  width: auto;
+  height: auto;
+}
+.rightPaper{
+  height: 30vh;
+  background-color: #222222;
+  border-radius: 25px;
+  padding: 30px;
+  margin-top: auto;
+  margin-top: auto;
+  text-align: center;
+}
+
+.whosturn {
+  font-family: "Roboto", sans-serif;
+  color: #cfcfcf;
+  font-size: 3em;
+  width: auto;
+  height: auto;
+}
+
+.youropponent{
+  font-family: "Roboto", sans-serif;
+  color: #cfcfcf;
+  font-size: 2em;
+  width: auto;
+  height: auto;
+}
+
+.textChatArea{
+  height:40%;
+  width:auto;
+  background-color: white;
+}
+
+.bottomer{
+  width:100%;
+  position: fixed;
+  bottom: 0%;
+  margin-bottom: 10%;
+}
+
+.borderer{
+  padding-right: 2vh;
+  padding-left: 2vh;
+}
