@@ -8,15 +8,23 @@
     "gen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
+    "@types/next": "^9.0.0",
+    "@types/react": "^17.0.3",
     "next": "latest",
     "react": "^17.0.1",
     "react-dom": "^17.0.1"
   },
   "devDependencies": {
-    "@types/node": "^7.0.31",
-    "@types/react": "^15.0.29",
-    "concurrently": "^3.4.0",
-    "tslint": "^5.4.3",
-    "typescript": "^4.2.3"
+    "@babel/core": "^7.13.8",
+    "@babel/preset-env": "^7.13.9",
+    "@graphql-codegen/cli": "1.21.1",
+    "@graphql-codegen/typescript": "1.21.0",
+    "@graphql-codegen/typescript-operations": "1.17.14",
+    "@graphql-codegen/typescript-react-apollo": "2.2.1",
+    "@graphql-codegen/typescript-urql": "^2.0.3",
+    "@types/node": "^14.14.37",
+    "babel-loader": "^8.2.2",
+    "typescript": "^4.2.2",
+    "webpack": "^5.24.2"
   }
 }

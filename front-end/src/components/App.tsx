@@ -8,18 +8,19 @@ export namespace App {
   export interface State { }
 }
 
-export class App extends React.Component<App.Props, App.State> {
-  render() {
+const App = ({props}) => {
+
     return (
       <div>
         <Head>
-          <title>{this.props.title}</title>
+          <title>{props.title}</title>
           <meta name='viewport' content='initial-scale=1.0, width=device-width' />
         </Head>
         <div>
-          {this.props.children}
+          {props.children}
         </div>
       </div>
     );
-  }
 }
+
+export default App;
