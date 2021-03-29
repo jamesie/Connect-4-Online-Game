@@ -1,0 +1,32 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
+
+.titlescreen {
+  font-family: "Roboto", sans-serif;
+  color: #f4455a;
+  font-size: 5em;
+  width: auto;
+  height: auto;
+}
+
+.logo {
+  width: 500px;
+  height: 300px;
+}
+
+.centerdiv {
+  margin: auto auto;
+  width: auto;
+  text-align: center;
+}
+
+.wrapper {
+  width: 100em;
+  height: auto;
+  border: 5px solid #f4455a;
+  padding: 30px;
+  padding-top: 200;
+  margin: auto;
+  align-items: center;
+  bottom: 100px;
+}
+

@@ -1,15 +1,20 @@
-import React from 'react'
+import React from "react";
+import Grid from "@material-ui/core/Grid";
+import { Button, Paper, TextField, Box } from "@material-ui/core";
+//@ts-ignore
+import styles from "./index.module.css";
 
-interface indexProps {
-
-}
+interface indexProps {}
 
 const index: React.FC<indexProps> = ({}) => {
   return (
-    <>
-      <div>index</div>
-    </>
+    <div className={styles.centerdiv}>
+      <h1 className={styles.titlescreen}>Welcome to Connect4Online.xyz!</h1>
+      <Button color='primary' variant='contained' size="large">
+        Click to start a game!
+      </Button>
+    </div>
   );
-}
+};
 
-export default index
+export default index;

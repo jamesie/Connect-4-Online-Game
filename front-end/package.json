@@ -8,6 +8,7 @@
     "gen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
+    "@material-ui/core": "^4.11.3",
     "@types/next": "^9.0.0",
     "@types/react": "^17.0.3",
     "next": "latest",
