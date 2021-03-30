@@ -1,11 +1,11 @@
 import { Grid, Paper } from "@material-ui/core";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./gamePage.module.css";
 import { useIsHover } from "./useIsHover";
 
-const gamePage: NextPage<{ pageId: string }> = () => {
+const gamePage: NextPage<{ gameId: string }> = () => {
   //'../../../static/board.svg'
 
   const [hover, handleHover] = useState({
@@ -18,59 +18,111 @@ const gamePage: NextPage<{ pageId: string }> = () => {
     6: false,
   });
 
-  const buttons = () => {
-    let arr = [];
+  const [pieces, setPieces] = useState([<></>]);
 
+  const buttons = (): JSX.Element[] | null => {
+    let arr = [];
     for (let i = 0; i < 7; i++) {
-      var classname = "b" + i;
       arr.push(
-        <Grid item xs>
-          <button
-            onClick={() => {
-              console.log(hover);
-            }}
-            onMouseEnter={(e) => {
-              for (let i = 0; i < 7; i++) {
-                if (hover[i] === true && hover[i] !== parseInt(e.target.name)) {
-                  handleHover({
-                    ...hover,
-                    [i]: false,
-                    [parseInt(e.target.name)]: true,
-                  });
-                  console.log("returning")
-                  return;
-                }
+        <button
+          onClick={() => {
+            console.log(typeof (<></>));
+          }}
+          onMouseEnter={(e) => {
+            for (let i = 0; i < 7; i++) {
+              if (hover[i] === true && hover[i] !== parseInt(e.target.name)) {
+                handleHover({
+                  ...hover,
+                  [i]: false,
+                  [parseInt(e.target.name)]: true,
+                });
+                console.log("returning");
+                return;
               }
-              handleHover({
-                ...hover,
-                [parseInt(e.target.name)]: true,
-              });
-            }}
-            className={styles.classname}
-            name={String(i)}
-            onMouseLeave={(e) => {
-              handleHover({
-                ...hover,
-                [parseInt(e.target.name)]: false,
-              });
-            }}
-          >
-            ddddd
-          </button>
-        </Grid>
+            }
+            handleHover({
+              ...hover,
+              [parseInt(e.target.name)]: true,
+            });
+          }}
+          className={styles.button}
+          name={String(i)}
+          onMouseLeave={(e) => {
+            handleHover({
+              ...hover,
+              [parseInt(e.target.name)]: false,
+            });
+          }}
+          style={{ gridColumn: i + 1, gridRow: 1 }}
+        >
+          column {i}
+        </button>
       );
     }
     return arr;
   };
 
-  const whereHover = (): string | null => {
+  const whereHoverDebug = (): string | null => {
+    var string = "";
     for (let index = 0; index < 7; index++) {
       if (hover[index] === true) {
-        return `HOVERING OVER ${index}`;
+        string = `HOVERING OVER COLUMN ${index}`;
       }
     }
-    return null;
+    return string;
   };
+
+  useEffect(() => {
+    for (let index = 0; index < 7; index++) {
+      console.log(index);
+      piecesArr.push(
+        <>
+          <img
+            src={`../../../static/${playerColor}-piece.svg`}
+            alt={`${playerColor}_piece.svg`}
+            className={styles.piece}
+            style={{
+              opacity: 0,
+              gridRow: 1,
+              gridColumn: index + 1,
+              display: "flex",
+            }}
+          ></img>
+        </>
+      );
+    }
+    setPieces(piecesArr);
+  }, []);
+
+  useEffect(() => {
+    var jsxArr = [];
+    for (let index = 0; index < 7; index++) {
+      jsxArr.push(
+        <>
+          <img
+            src={`../../../static/${playerColor}-piece.svg`}
+            alt={`${playerColor}_piece.svg`}
+            className={styles.piece}
+            style={
+              hover[index] === true
+                ? {
+                    opacity: 100,
+                    gridRow: 1,
+                    gridColumn: index + 1,
+                    display: "flex",
+                  }
+                : { opacity: 0, gridRow: 1, gridColumn: index + 1, display: "flex" }
+            }
+          ></img>
+        </>
+      );
+    }
+    setPieces(jsxArr);
+  }, [hover]);
+
+  var piecesArr = [];
+
+  const playerColor = "red";
 
   return (
     <div
@@ -83,37 +135,34 @@ const gamePage: NextPage<{ pageId: string }> = () => {
         position: "absolute",
       }}
     >
-      <h1 className={styles.whosturn}>{whereHover()}</h1>
-
-      <div className={styles.bottomer}>
-        <Grid container direction='row' justify='center' alignItems='center'>
-          <Grid item xs={2}></Grid>
-          <Grid item xs={1}></Grid>
-          <Grid item xs={4}>
-            <img src='../../../static/board.svg' alt='Error' className={styles.board}></img>
-            <div className={styles.borderer}>
-              <Grid container direction='row' justify='center' alignItems='center'>
-                {buttons()}
-              </Grid>
+      <div className={styles.mainGrid}>
+        <div className={styles.middleWrapper}>
+          <div className={styles.boardSeperateGrid}>
+            <div className={styles.imgWrapper}>
+              <img src='../../../static/board.svg' alt='Error' className={styles.board} />
             </div>
-          </Grid>
-          <Grid item xs={1}></Grid>
-          <Grid item xs={2}>
-            <div className={styles.rightPaper}>
-              <h1 className={styles.whosturn}>Its Your Turn!</h1>
-              <h1 className={styles.youropponent}>Your Opponent: Bobby Fisher</h1>
-              <div className={styles.textChatArea}> text chat area</div>
+          </div>
+          <div className={styles.gridPos}>
+            <div className={styles.boardGrid}>
+              {pieces}
+              {buttons()}
             </div>
-          </Grid>
-        </Grid>
+          </div>
+        </div>
+        <div className={styles.rightPaper}>
+          <h1 className={styles.whosturn}>Its Your Turn!</h1>
+          <h1 className={styles.youropponent}>Your Opponent: Bobby Fisher</h1>
+          <div className={styles.textChatArea}> text chat area</div>
+        </div>
       </div>
+      <h1 className={styles.whosturn}>{whereHoverDebug()}</h1>
     </div>
   );
 };
 
 gamePage.getInitialProps = ({ query }) => {
   return {
-    pageId: query.pageId as string,
+    gameId: query.gameId as string,
   };
 };
 

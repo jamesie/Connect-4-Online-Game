@@ -1,18 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
 
-.board {
-  width: auto;
-  height: auto;
-}
-.rightPaper{
-  height: 30vh;
-  background-color: #222222;
-  border-radius: 25px;
-  padding: 30px;
-  margin-top: auto;
-  margin-top: auto;
-  text-align: center;
-}
+/* ________________DOESNT MATTER_________________*/
 
 .whosturn {
   font-family: "Roboto", sans-serif;
@@ -22,7 +10,7 @@
   height: auto;
 }
 
-.youropponent{
+.youropponent {
   font-family: "Roboto", sans-serif;
   color: #cfcfcf;
   font-size: 2em;
@@ -30,25 +18,119 @@
   height: auto;
 }
 
-.textChatArea{
-  height:40%;
-  width:auto;
+.textChatArea {
+  height: 25vh;
+  width: auto;
   background-color: white;
 }
 
-.bottomer{
-  width:100%;
-  position: fixed;
-  bottom: 0%;
-  margin-bottom: 10%;
+/* ________________DOESNT MATTER_________________*/
+
+.board {
+  height: 600px;
+  width: 600px;
+  z-index: -1;
+  margin: auto;
+  grid-column: 3;
+  grid-row: 2;
+}
+.rightPaper {
+  height: 55vh;
+  background-color: #222222;
+  border-radius: 25px;
+  padding: 30px;
+  margin-top: auto;
+  margin-bottom: auto;
+  text-align: center;
+  grid-column: 5;
 }
 
-.borderer{
-  padding-right: 1vw;
-  padding-left: 1vw;
+.buttonWrapper {
+  grid-column: 3;
+  grid-row: 2;
+  width: 655px;
+  height: 80vh;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  margin-bottom: -80vh;
+  z-index: 2;
+  max-width: 555px;
+  max-height: 80vh;
 }
 
-.classname{
-  background-color: red;
+.button {
+  background-color: transparent;
+  border-color: red;
+  outline: none;
+  width: calc(600px / 7);
+  height: calc(60vh);
+  max-width: calc(555px / 7);
+  max-height: calc(60vh);
+  z-index: 2;
+  display: flex;
+}
+
+.pieces {
+  grid-row: 1;
+  display: flex;
+  border: 5px solid greenyellow;
+  height: 100px;
+  width: 93%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: -6vh;
+}
+
+.boardGrid {
+  display: grid;
+  grid-template-columns: repeat(7, auto);
+  grid-template-rows: repeat(7, auto);
+  width: 555px;
+  height: 56  0px;
+  margin-left: auto;
+  margin-top: px;
+  margin-right: auto;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 30vw 5vw 600px 5vw 30vw;
+  width: calc(30vw +  5vw + 600px + 5vw + 30vw);
+  height: 100%;
+  margin: 0 auto;
+  justify-items: center;
+}
+
+.gridPos {
+  grid-column: 3;
+  grid-row: 2;
+  height: 80vh;
+  margin-top: -640px;
+  width: 600px;
+}
+
+.imgWrapper {
+  grid-row: 2;
+  width: 600px;
+  height: 80vh;
+  text-align: center;
+  max-width: 600px;
+  max-height: 80vh;
+}
+
+.boardSeperateGrid{
+  display: grid;
+  grid-column: 3;
+  grid-template-rows: 100px 600px;
   width: 100%;
+  height:100%;
 }
+
+.middleWrapper{
+  grid-column: 3;
+  margin: auto;
+  width: auto;
+  height: auto;
+}
+
