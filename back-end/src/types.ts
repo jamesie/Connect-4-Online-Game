@@ -1,12 +1,12 @@
 import session from "express-session";
 import { Redis } from "ioredis";
 import { Request, Response } from "express";
-import { ObjectID } from "typeorm";
+import { ObjectId } from "mongodb";
 
 
 declare module "express-session" {
   interface SessionData {
-    userId?: ObjectID;
+    userId?: ObjectId;
   }
 }
 

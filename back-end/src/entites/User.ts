@@ -1,6 +1,7 @@
-import { BaseEntity, Entity, ObjectIdColumn, OneToMany, Column, ObjectID } from "typeorm";
+import { BaseEntity, Entity, ObjectIdColumn, OneToMany, Column } from "typeorm";
 import { Field, ID, ObjectType } from 'type-graphql'
 import { Game } from "./Game";
+import { ObjectId } from 'mongodb'
 
 
 @ObjectType()
@@ -8,10 +9,10 @@ import { Game } from "./Game";
 export class User extends BaseEntity {
  @Field(() => ID)
  @ObjectIdColumn()
- _id: ObjectID;
+ _id: ObjectId;
 
- @Field(() => String)
- @Column(() => String)
+ @Field()
+ @Column({type: String})
  nickname!: string
 
  @Field(() => [Game], {nullable: true})
