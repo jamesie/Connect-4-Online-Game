@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, ManyToOne, ObjectIdColumn  } from "typeorm";
+import { BaseEntity, Column, Entity, ObjectIdColumn  } from "typeorm";
 import { Field, ID, Int, ObjectType } from "type-graphql";
 import { User } from "./User";
 import { ObjectId } from 'mongodb'
@@ -10,15 +10,31 @@ export class Game extends BaseEntity {
   @ObjectIdColumn()
   _id: ObjectId;
 
-  @Field(() => User, { nullable: true })
-  @ManyToOne(() => User, user => user.creatorOfGames)
-  user1: User;
+  @Field()
+  user1!: User;
 
   @Field(() => User, { nullable: true })
-  @ManyToOne(() => User, user => user.joins)
-  user2: User;
+  user2: User | null;
 
   @Field(() => [[Int]], { nullable: true })
   @Column()
   gameBoard: number[][]
+
+  @Field(() => Int, {defaultValue: 0})
+  @Column()
+  moveNum: number
+
+  @Field(() => ID)
+  @Column()
+  whoseMove: ObjectId;
+
+  @Column()
+  user1Id!: ObjectId
+
+  @Column({ nullable: true })
+  user2Id: ObjectId;
 }
+
+
+
+
