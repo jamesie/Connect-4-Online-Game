@@ -2,7 +2,8 @@ import { Game } from "../entites/Game";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { User } from "../entites/User";
 import { MyContext } from "../types";
-import { getMongoManager } from "typeorm";
+import { getMongoManager, getMongoRepository } from "typeorm";
+import { ObjectId } from "mongodb";
 
 @Resolver()
 export class gameResolver {
@@ -12,35 +13,28 @@ export class gameResolver {
   }
 
   @Mutation(() => User, { nullable: true })
-  async createUser(@Arg("username") username: string, @Ctx() {req }: MyContext): Promise<User | null> {
-
+  async createUser(@Arg("username") username: string, @Ctx() { req }: MyContext): Promise<User | null> {
     const manager = getMongoManager();
 
-    console.log(username)
-    const user = new User()
-    user.nickname = username
+    const user = new User();
+    user.nickname = username;
 
     try {
       await manager.save(user);
-      console.log(user._id)
     } catch (err) {
-      console.log(user)
-      console.log(err)
       return null;
     }
-
     req.session.userId = user._id;
 
     return user;
   }
 
-  @Query(() => User)
+  @Query(() => User, { nullable: true })
   async me(@Ctx() { req }: MyContext): Promise<User | null> {
-    const user = await User.findOne({
-      where: {
-        id: req.session.userId,
-      },
-    });
+    const _id = new ObjectId(req.session.userId);
+
+    const user = await getMongoRepository(User).findOne({ where: { _id } });
+
     if (!user) {
       return null;
     }
