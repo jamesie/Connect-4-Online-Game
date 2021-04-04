@@ -23,6 +23,7 @@ export class gameResolver {
     } catch (err) {
       return null;
     }
+
     req.session.userId = user._id;
 
     return user;
@@ -43,7 +44,16 @@ export class gameResolver {
 
   @Mutation(() => Game, { nullable: true })
   @UseMiddleware(isAuth)
-  async createGame(@Ctx() { req }: MyContext): Promise<Game | null> {
+  async createGame(@Ctx() { req }: MyContext, @Arg("googleCaptchaToken") captchaToken: string): Promise<Game | null> {
+    /* 
+    TODO: Google captcha token verification
+    */
+    if (!captchaToken) {
+      //pass
+    } /* 
+    
+    */
+
     const game = new Game();
     // GameBoard: 0 means empty, 1 means player1/creator, 2 means joiner of game
     game.gameBoard = [
@@ -87,29 +97,29 @@ export class gameResolver {
       return null;
     }
 
-    if ((new ObjectId(req.session.userId)).equals(game.user1Id)) {
+    if (new ObjectId(req.session.userId).equals(game.user1Id)) {
       throw new Error("Trying to join own game");
     }
 
-    const joiningUserId = new ObjectId(req.session.userId)
+    const joiningUserId = new ObjectId(req.session.userId);
     const joiningUser = await getMongoRepository(User).findOne({ where: { _id: joiningUserId } });
 
     if (!joiningUser) {
       throw new Error("Oh no! Something has gone terribly wrong, but how!?!?");
-    } 
+    }
 
-    game.user1 = await getMongoRepository(User).findOne({ where: { _id: new ObjectId(game.user1Id) } }) as User;
+    game.user1 = (await getMongoRepository(User).findOne({ where: { _id: new ObjectId(game.user1Id) } })) as User;
     game.user2 = joiningUser;
-    game.user2Id = joiningUserId
+    game.user2Id = joiningUserId;
 
-    await getMongoRepository(Game).updateOne({_id}, { $set: { user2: joiningUser, user2Id: joiningUserId}})
+    await getMongoRepository(Game).updateOne({ _id }, { $set: { user2: joiningUser, user2Id: joiningUserId } });
 
     return game;
   }
 
   @Query(() => Game)
   @UseMiddleware(isAuth)
-  async fetchGameInfos(@Arg("gameId") gameId: string, @Ctx() { req }: MyContext,): Promise<Game | null> {
+  async fetchGameInfos(@Arg("gameId") gameId: string, @Ctx() { req }: MyContext): Promise<Game | null> {
     const _id: ObjectId = new ObjectId(gameId);
     console.log("gameId", _id, typeof _id);
 
@@ -132,7 +142,7 @@ export class gameResolver {
       game.user2 = user2;
     }
 
-    if (!(req.session.userId)?.equals(game.user1Id) || !(req.session.userId)?.equals(game.user2Id)) {
+    if (!req.session.userId?.equals(game.user1Id) || !req.session.userId?.equals(game.user2Id)) {
       throw new Error("Hmm pretty sus, you got any form of identification on you?");
     }
 
