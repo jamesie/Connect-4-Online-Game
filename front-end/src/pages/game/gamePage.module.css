@@ -29,7 +29,7 @@
 .board {
   height: 600px;
   width: 600px;
-  z-index: -1;
+  z-index: 1;
   margin: auto;
   grid-column: 3;
   grid-row: 2;
@@ -45,58 +45,36 @@
   grid-column: 5;
 }
 
-.buttonWrapper {
-  grid-column: 3;
-  grid-row: 2;
-  width: 655px;
-  height: 80vh;
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  margin-bottom: -80vh;
-  z-index: 2;
-  max-width: 555px;
-  max-height: 80vh;
-}
 
 .button {
   background-color: transparent;
-  border-color: red;
+  border-color: transparent;
   outline: none;
   width: calc(600px / 7);
   height: calc(60vh);
   max-width: calc(555px / 7);
   max-height: calc(60vh);
+  display: flex;
   z-index: 2;
-  display: flex;
-}
-
-.pieces {
-  grid-row: 1;
-  display: flex;
-  border: 5px solid greenyellow;
-  height: 100px;
-  width: 93%;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: -6vh;
+  margin-top: -200px;
+  position: static;
 }
 
 .boardGrid {
   display: grid;
   grid-template-columns: repeat(7, auto);
-  grid-template-rows: repeat(7, auto);
   width: 555px;
-  height: 56  0px;
+  height: 560px;
   margin-left: auto;
   margin-top: px;
   margin-right: auto;
+  transition: 0.5s;
 }
 
 .mainGrid {
   display: grid;
   grid-template-columns: 30vw 5vw 600px 5vw 30vw;
-  width: calc(30vw +  5vw + 600px + 5vw + 30vw);
+  width: calc(30vw + 5vw + 600px + 5vw + 30vw);
   height: 100%;
   margin: 0 auto;
   justify-items: center;
@@ -105,7 +83,7 @@
 .gridPos {
   grid-column: 3;
   grid-row: 2;
-  height: 80vh;
+  height: 600px;
   margin-top: -640px;
   width: 600px;
 }
@@ -119,18 +97,52 @@
   max-height: 80vh;
 }
 
-.boardSeperateGrid{
+.boardSeperateGrid {
   display: grid;
   grid-column: 3;
   grid-template-rows: 100px 600px;
   width: 100%;
-  height:100%;
+  height: 100%;
 }
 
-.middleWrapper{
+.middleWrapper {
   grid-column: 3;
   margin: auto;
   width: auto;
   height: auto;
 }
 
+.piece{
+  z-index: 0;
+  transform: translateZ(0);
+}
+
+.pieceDown1{
+  animation: pieceDown1 0.4s linear 0.5s 1 normal forwards
+}
+
+@keyframes pieceDown1 { 
+  0% {transform: translateY(0)}
+  50% {transform: translateY(200px);}
+  60% {transform: translateY(180px);}
+  80% {transform: translateY(200px);}
+  90% {transform: translateY(190px);}
+  100% {transform: translateY(200px);}
+} 
+
+
+.pieceDown2{
+  
+}
+.pieceDown3{
+  
+}
+.pieceDown4{
+  
+}
+.pieceDown5{
+  
+}
+.pieceDown6{
+  
+}
