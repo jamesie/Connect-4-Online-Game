@@ -142,10 +142,17 @@ export class gameResolver {
       game.user2 = user2;
     }
 
-    if (!req.session.userId?.equals(game.user1Id) || !req.session.userId?.equals(game.user2Id)) {
+    if (!req.session.userId?.equals(game.user1Id) && !req.session.userId?.equals(game.user2Id)) {
       throw new Error("Hmm pretty sus, you got any form of identification on you?");
     }
 
     return game;
   }
+
+  @Mutation(() => Game)
+  @UseMiddleware(isAuth)
+  async movePiece () {
+
+  }
+
 }
