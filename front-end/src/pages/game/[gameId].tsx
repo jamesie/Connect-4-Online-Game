@@ -29,7 +29,7 @@ const gamePage: NextPage<{ gameId: string }> = () => {
               <img src='../../../static/board.svg' alt='Error' className={styles.board} />
             </div>
           </div>
-          <PiecesAndButtons playerColor={playerColor}/>
+          <PiecesAndButtons playerColor={playerColor} key="piecesandbuttons"/>
         </div>
         <div className={styles.rightPaper}>
           <h1 className={styles.whosturn}>Its Your Turn!</h1>

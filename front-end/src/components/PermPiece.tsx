@@ -1,3 +1,4 @@
+
 import React from "react";
 import styles from "../pages/game/gamePage.module.css";
 
@@ -8,6 +9,8 @@ interface PermPieceProps {
 }
 
 const PermPiece: React.FC<PermPieceProps> = ({ downTo, color, columnplus1 }) => {
+
+
   return (
     <>
       <img
@@ -20,7 +23,7 @@ const PermPiece: React.FC<PermPieceProps> = ({ downTo, color, columnplus1 }) => 
           gridColumn: columnplus1,
           display: "flex",
         }}
-        key={(columnplus1 - 1) + "perm piece"}
+        key={columnplus1 - 1 + "perm piece"}
       />
     </>
   );
