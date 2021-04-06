@@ -1,0 +1,14 @@
+query FetchGameInfos($gameId: String!){
+  fetchGameInfos(gameId: $gameId) {
+    _id
+    gameBoard
+    user1 {
+      _id
+      nickname
+    }
+    user2 {
+      _id
+      nickname
+    }
+  }
+}

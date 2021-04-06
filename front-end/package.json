@@ -5,7 +5,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "gen": "graphql-codegen --config codegen.yml"
+    "gen": "graphql-codegen --config codegen.yml",
+    "gqltypes": "graphql-codegen --config ./codegenconfig.yml"
   },
   "dependencies": {
     "@apollo/client": "^3.3.13",
@@ -16,12 +17,13 @@
     "next": "^10.1.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "react-spring": "^9.0.0"
+    "react-spring": "^9.0.0",
+    "socket.io-client": "^4.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.13.8",
     "@babel/preset-env": "^7.13.9",
-    "@graphql-codegen/cli": "1.21.1",
+    "@graphql-codegen/cli": "^1.21.3",
     "@graphql-codegen/typescript": "1.21.0",
     "@graphql-codegen/typescript-operations": "1.17.14",
     "@graphql-codegen/typescript-react-apollo": "2.2.1",

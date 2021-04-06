@@ -1,0 +1,15 @@
+mutation CreateGame($googleCaptchaToken: String!){
+  createGame(googleCaptchaToken: $googleCaptchaToken) {
+    _id
+    user1 {
+      _id
+      nickname
+    }
+    user2 {
+      _id
+      nickname
+    }
+    gameBoard
+    whoseMove
+  }
+}

@@ -98,7 +98,7 @@ const PiecesAndButtons: React.FC<PiecesAndButtonsProps> = ({ playerColor }) => {
           <img
             src={`../../../static/${playerColor}-piece.svg`}
             alt={`${playerColor}_piece.svg`}
-            className={styles.piece}
+            className={styles.pieceDown1}
             onClick={() => {}}
             style={{
               opacity: 100,

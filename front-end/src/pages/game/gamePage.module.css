@@ -5,7 +5,7 @@
 .whosturn {
   font-family: "Roboto", sans-serif;
   color: #cfcfcf;
-  font-size: 3em;
+  font-size: 30px;
   width: auto;
   height: auto;
 }
@@ -13,7 +13,7 @@
 .youropponent {
   font-family: "Roboto", sans-serif;
   color: #cfcfcf;
-  font-size: 2em;
+  font-size: 20px;
   width: auto;
   height: auto;
 }
@@ -118,16 +118,17 @@
 }
 
 .pieceDown1{
-  animation: pieceDown1 0.4s linear 0.5s 1 normal forwards
+  animation: pieceDown1 0.4s linear 0.5s 1 normal forwards;
+  z-index: -1;
 }
 
 @keyframes pieceDown1 { 
   0% {transform: translateY(0)}
-  50% {transform: translateY(200px);}
-  60% {transform: translateY(180px);}
-  80% {transform: translateY(200px);}
-  90% {transform: translateY(190px);}
-  100% {transform: translateY(200px);}
+  50% {transform: translateY(480px);}
+  60% {transform: translateY(430px);}
+  80% {transform: translateY(480px);}
+  90% {transform: translateY(460px);}
+  100% {transform: translateY(480px);}
 } 
 
 
