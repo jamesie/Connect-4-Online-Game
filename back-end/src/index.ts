@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import connectRedis from "connect-redis";
 import express from "express";
 import session from "express-session";
@@ -10,8 +11,11 @@ import { ApolloServer } from "apollo-server-express";
 import { gameResolver } from "./resolvers/gameResolver";
 import { buildSchema } from "type-graphql";
 import { User } from "./entites/User";
+import { Server, Socket } from 'socket.io';
+
 
 const PORT = 4000;
+
 
 const main = async () => {
   const conn = await createConnection({
@@ -31,11 +35,13 @@ const main = async () => {
   const RedisStore = connectRedis(session);
   const redis = new Redis();
 
+  const corsOptions = {
+    origin: "http://localhost:3000",
+    credentials: true,
+  }
+
   app.use(
-    cors({
-      origin: "http://localhost:3000",
-      credentials: true,
-    })
+    cors(corsOptions)
   );
 
   app.use(
@@ -70,9 +76,24 @@ const main = async () => {
     cors: false,
   });
 
-  app.listen(PORT, () => {
+  const http = app.listen(PORT, () => {
     console.log(`server started on port: ${PORT}`);
   });
+
+  const io = new Server(http, {
+    cors: corsOptions,
+
+  });
+
+  io.on("connection", (socket: Socket) => {
+    // ...
+  });
+
+  
+
+
+
+
 };
 
 main().catch((err) => console.log(err));
