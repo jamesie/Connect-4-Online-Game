@@ -5,8 +5,21 @@ import React, { useEffect, useState } from "react";
 import { animated, useSpring } from "react-spring";
 import PiecesAndButtons from "../../components/PiecesAndButtons";
 import styles from "./gamePage.module.css";
+import { io, Socket } from 'socket.io-client';
 
-const gamePage: NextPage<{ gameId: string }> = () => {
+
+const gamePage: NextPage<{ gameId: string }> = ({gameId}) => {
+
+  const [urMove, setUrMove] = useState<boolean>()
+  
+
+  const socket = io("http://localhost:4000/")
+
+  socket.emit('joinRoom', {nickname: "HARDCODEDNICKNAME", roomId: gameId})
+
+  socket.on("moveCompleted", () => {
+    setUrMove(false)
+  })
 
 
   const playerColor = "red";
@@ -32,7 +45,7 @@ const gamePage: NextPage<{ gameId: string }> = () => {
           <PiecesAndButtons playerColor={playerColor} key="piecesandbuttons"/>
         </div>
         <div className={styles.rightPaper}>
-          <h1 className={styles.whosturn}>Its Your Turn!</h1>
+          <h1 className={styles.whosturn}>{urMove ? "It's Your Turn HARDCODEDUSERNAME!" : "It's HARDCODEDOPONENTSNAME's turn"}</h1>
           <h1 className={styles.youropponent}>Your Opponent: Bobby Fisher</h1>
           <div className={styles.textChatArea}> text chat area</div>
         </div>

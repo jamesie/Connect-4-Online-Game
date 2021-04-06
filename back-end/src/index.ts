@@ -86,14 +86,20 @@ const main = async () => {
   });
 
   io.on("connection", (socket: Socket) => {
-    // ...
+    socket.on('joinRoom', ({ nickname, roomId }: JoinRoomType) => {
+      console.log(`${nickname} Joined Room ${roomId}!`)
+      socket.join(roomId)
+      socket.on('completedMove', () => {
+        socket.broadcast.to(roomId).emit('moveCompleted')
+      })
+    })
+    
   });
 
-  
-
-
-
-
+  type JoinRoomType = {
+    nickname: string
+    roomId: string
+  }
 };
 
 main().catch((err) => console.log(err));
