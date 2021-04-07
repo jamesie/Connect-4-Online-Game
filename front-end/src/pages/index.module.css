@@ -65,6 +65,10 @@
   margin-right: auto;
 }
 
+.nickNameInput{
+  text-align: center;
+}
+
 .nickNameInput:focus{
   border: none;
   border-bottom: 5px solid rgb(214, 214, 214);
@@ -177,6 +181,10 @@
    border: none;
    border-bottom: 5px solid rgb(148, 148, 148);
    outline: none;
+  }
+
+  .nickNameInput{
+    text-align: center;
   }
 }
 
