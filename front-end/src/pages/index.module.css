@@ -2,31 +2,184 @@
 
 .titlescreen {
   font-family: "Roboto", sans-serif;
-  color: #f4455a;
-  font-size: 5em;
-  width: auto;
-  height: auto;
-}
-
-.logo {
-  width: 500px;
-  height: 300px;
-}
-
-.centerdiv {
-  margin: auto auto;
-  width: auto;
+  font-weight: bold;
+  color: #ffffff;
+  font-size: 70px;
+  grid-column: 1;
+  grid-row: 1;
   text-align: center;
 }
 
-.wrapper {
-  width: 100em;
-  height: auto;
-  border: 5px solid #f4455a;
-  padding: 30px;
-  padding-top: 200;
-  margin: auto;
-  align-items: center;
-  bottom: 100px;
+.submitButton{
+  border: 5px solid white;
+  border-radius: 40px;
+  background: none;
+  font-family: "Roboto", sans-serif;
+  color: #ffffff;
+  font-size: 20px;
+  width: 35%;
+  height: 75px;
+  outline: none;
+  margin-top: auto;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1vh;
+}
+
+.submitButton:active{
+  border: 5px solid rgb(207, 207, 207);
+  color: rgb(207, 207, 207);
+  outline: none;
+}
+
+
+.startGameWrapper{
+  grid-column: 1;
+  grid-row: 1;
+  border: 5px solid white;
+  border-radius: 20px;
+  width: 800px;
+  height: 600px;
+  display: block;
+  margin: auto auto;
+  margin-bottom: 30%;
+}
+
+.nickNameInput{
+  border: none;
+  border-bottom: 5px solid white;
+  background: none;
+  font-family: "Roboto", sans-serif;
+  color: #ffffff;
+  font-size: 20px;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.formText {
+  font-family: "Roboto", sans-serif;
+  color: #ffffff;
+  font-size: 30px;
+  text-align: left;
+  margin-top: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.nickNameInput:focus{
+  border: none;
+  border-bottom: 5px solid rgb(214, 214, 214);
+  outline: none;
+}
+
+.nickNameInput:active{
+  border: none;
+  border-bottom: 5px solid rgb(153, 153, 153);
+  outline: none;
+}
+
+.gradientBG{
+  left: 0%;
+  right: 0%;
+  top: 0%;
+  bottom: 0%;
+  position: fixed;
+  background: linear-gradient(-45deg, #78e6ff, #6435ff, #5f5cff, #5f5cff);
+  background-size: 400% 400%;
+  -webkit-animation: gradient 10s ease infinite;
+  -moz-animation: gradient 10s ease infinite;
+  -o-animation: gradient 10s ease infinite;
+  animation: gradient 10s ease infinite;
+}
+@-webkit-keyframes gradient {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:50% 0%}
+
+}
+@-moz-keyframes gradient {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+
+}
+@-o-keyframes gradient {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+
+}
+@keyframes gradient {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:50% 0%}
+
+}
+
+@media (max-width:1024px){
+  .titlescreen {
+    font-family: "Roboto", sans-serif;
+    font-weight: bold;
+    color: #ffffff;
+    font-size: 8vw;
+    grid-column: 1;
+    grid-row: 1;
+    text-align: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .formText {
+    font-family: "Roboto", sans-serif;
+    color: #ffffff;
+    font-size: 5vw;
+    text-align: left;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    margin-top: auto;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .startGameWrapper{
+    grid-column: 1;
+    grid-row: 1;
+    border: 3px solid white;
+    border-radius: 20px;
+    width: 90vw;
+    height: 300px;
+    display: block;
+    margin: auto auto;
+    margin-bottom: 30%;
+    
+  }
+
+  .nickNameInput{
+    border: none;
+    border-bottom: 5px solid white;
+    background: none;
+    font-family: "Roboto", sans-serif;
+    color: #ffffff;
+    font-size: 4vw;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: auto;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .nickNameInput:focus{
+    border: none;
+    border-bottom: 5px solid rgb(195, 195, 195);
+    outline: none;
+  }
+
+  
+.nickNameInput:active{
+  border: none;
+  border-bottom: 5px solid rgb(148, 148, 148);
+  outline: none;
+}
 }
 
