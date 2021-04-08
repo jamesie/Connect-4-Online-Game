@@ -65,6 +65,18 @@
   margin-right: auto;
 }
 
+.errorMessage{
+  font-family: "Roboto", sans-serif;
+  color: #ff5c5c;
+  font-size: 20px;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: auto;
+  height: 20px;
+
+}
+
 .nickNameInput{
   text-align: center;
 }

@@ -18,9 +18,10 @@
     "graphql": "^15.5.0",
     "ioredis": "^4.25.0",
     "mongodb": "^3.6.5",
+    "node-fetch": "^2.6.1",
+    "socket.io": "^4.0.1",
     "type-graphql": "^1.1.1",
-    "typeorm": "^0.2.32",
-    "socket.io": "^4.0.1"
+    "typeorm": "^0.2.32"
   },
   "devDependencies": {
     "@types/connect-redis": "^0.0.16",

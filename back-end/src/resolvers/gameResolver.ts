@@ -5,6 +5,9 @@ import { MyContext } from "../types";
 import { getMongoRepository } from "typeorm";
 import { ObjectId } from "mongodb";
 import { isAuth } from "../utils/isAuth";
+import dotenv from "dotenv";
+import fetch from 'node-fetch'
+dotenv.config();
 
 @Resolver()
 export class gameResolver {
@@ -17,6 +20,10 @@ export class gameResolver {
   async createUser(@Arg("username") username: string, @Ctx() { req }: MyContext): Promise<User | null> {
     const user = new User();
     user.nickname = username;
+
+    if (username.length < 4) {
+      throw new Error("Your nickname must be greater than 3 characters long!");
+    }
 
     try {
       const savedUser = await getMongoRepository(User).save(user);
@@ -44,14 +51,19 @@ export class gameResolver {
   @Mutation(() => Game, { nullable: true })
   @UseMiddleware(isAuth)
   async createGame(@Ctx() { req }: MyContext, @Arg("googleCaptchaToken") captchaToken: string): Promise<Game | null> {
-    /* 
-    TODO: Google captcha token verification
-    */
-    if (!captchaToken) {
-      //pass
-    } /* 
-    
-    */
+
+    const secret = process.env.RECAPTCHA_SECRET_KEY;
+
+    const grc = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${captchaToken}`,
+      { method: "POST" }
+    );
+
+    const datares = await grc.json()
+
+    if (!datares.success) {
+      throw new Error("Beep boop ;)");
+    }
 
     const game = new Game();
     // GameBoard: 0 means empty, 1 means player1/creator, 2 means joiner of game
@@ -208,8 +220,8 @@ const isMoveLegal = (curr: number[][], proposed: number[][], userColor: number):
     return false;
   }
 
-  if (proposed[differences[0][0]][differences[0][1]] !== userColor){
-    console.log("move color bug")
+  if (proposed[differences[0][0]][differences[0][1]] !== userColor) {
+    console.log("move color bug");
     return false;
   }
 
