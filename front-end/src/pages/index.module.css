@@ -99,12 +99,12 @@
   top: 0%;
   bottom: 0%;
   position: fixed;
-  background: linear-gradient(-45deg, #78e6ff, #6435ff, #5f5cff, #5f5cff);
-  background-size: 400% 400%;
-  -webkit-animation: gradient 10s ease infinite;
-  -moz-animation: gradient 10s ease infinite;
-  -o-animation: gradient 10s ease infinite;
-  animation: gradient 10s ease infinite;
+  background: linear-gradient(-45deg, #92ebff,#62abff,  #7a52ff, #5c82ff, #5f5cff);
+  background-size: 600% 600%;
+  -webkit-animation: gradient 7s ease infinite;
+  -moz-animation: gradient 7s ease infinite;
+  -o-animation: gradient 7s ease infinite;
+  animation: gradient 7s ease infinite;
 }
 @-webkit-keyframes gradient {
   0%{background-position:0% 50%}
