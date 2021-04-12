@@ -108,6 +108,7 @@
 
 .gameBoard {
   width: 500px;
+  z-index: 2;
 }
 
 .pieceArrGrid {
@@ -130,6 +131,7 @@
   outline: none;
   border: none;
   background: none;
+  z-index: 3;
 }
 
 .piecesBoardSeperator{
@@ -146,27 +148,19 @@
   height: 64px;
 }
 
-
-@keyframes pieceDown1 {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(480px);
-  }
-  60% {
-    transform: translateY(430px);
-  }
-  80% {
-    transform: translateY(480px);
-  }
-  90% {
-    transform: translateY(460px);
-  }
-  100% {
-    transform: translateY(480px);
-  }
+.pieceDown1{
+  animation: pieceDown1 0.3s linear 0s 1 normal forwards;
+  z-index: 0;
 }
+
+@keyframes pieceDown1 { 
+  0% {transform: translateY(0)}
+  50% {transform: translateY(200px);}
+  60% {transform: translateY(180px);}
+  80% {transform: translateY(200px);}
+  90% {transform: translateY(190px);}
+  100% {transform: translateY(200px);}
+} 
 
 .pieceDown2 {
 }
@@ -176,5 +170,16 @@
 }
 .pieceDown5 {
 }
-.pieceDown6 {
+.pieceDown6{
+  animation: pieceDown6 0.4s linear 0s 1 normal forwards;
+  z-index: 0;
 }
+
+@keyframes pieceDown6 { 
+  0% {transform: translateY(0)}
+  50% {transform: translateY(398px);}
+  60% {transform: translateY(368px);}
+  80% {transform: translateY(398px);}
+  90% {transform: translateY(378px);}
+  100% {transform: translateY(398px);}
+} 
