@@ -111,7 +111,7 @@ export class gameResolver {
       throw new Error("Trying to join own game");
     }
 
-    if (game.user2 === null) {
+    if (game.user2) {
       throw new Error("Game full");
     }
 
