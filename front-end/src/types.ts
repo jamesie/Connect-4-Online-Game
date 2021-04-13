@@ -56,7 +56,7 @@ export type Query = {
   __typename?: 'Query';
   ping: Scalars['String'];
   me?: Maybe<User>;
-  fetchGameInfos: Game;
+  fetchGameInfos?: Maybe<Game>;
 };
 
 
@@ -144,9 +144,9 @@ export type FetchGameInfosQueryVariables = Exact<{
 
 export type FetchGameInfosQuery = (
   { __typename?: 'Query' }
-  & { fetchGameInfos: (
+  & { fetchGameInfos?: Maybe<(
     { __typename?: 'Game' }
-    & Pick<Game, '_id' | 'gameBoard'>
+    & Pick<Game, '_id' | 'gameBoard' | 'whoseMove'>
     & { user1: (
       { __typename?: 'User' }
       & Pick<User, '_id' | 'nickname'>
@@ -154,7 +154,7 @@ export type FetchGameInfosQuery = (
       { __typename?: 'User' }
       & Pick<User, '_id' | 'nickname'>
     )> }
-  ) }
+  )> }
 );
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
@@ -324,6 +324,7 @@ export const FetchGameInfosDocument = gql`
   fetchGameInfos(gameId: $gameId) {
     _id
     gameBoard
+    whoseMove
     user1 {
       _id
       nickname
