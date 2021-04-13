@@ -2,6 +2,7 @@ query FetchGameInfos($gameId: String!){
   fetchGameInfos(gameId: $gameId) {
     _id
     gameBoard
+    whoseMove
     user1 {
       _id
       nickname
