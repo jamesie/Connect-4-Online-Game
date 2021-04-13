@@ -4,11 +4,35 @@ import React, { HTMLAttributes, useEffect, useState } from "react";
 import styles from "./gamePage.module.css";
 import { io, Socket } from "socket.io-client";
 import stylesI from "../index.module.css";
-import { Button } from "@material-ui/core";
+import { Button, createMuiTheme } from "@material-ui/core";
 import { sleep } from "../../utils/sleep";
+import {
+  useFetchGameInfosLazyQuery,
+  useMeQuery,
+  useMovePieceMutation,
+  FetchGameInfosQueryResult,
+  FetchGameInfosLazyQueryHookResult,
+} from "../../types";
+import { doArrsMatch } from "../../utils/doArrsMatch";
+import SidePanelUI from "../../components/SidePanelUI";
+import { ThemeProvider } from "@material-ui/styles";
+import { grey } from "@material-ui/core/colors";
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: grey[50],
+    },
+    secondary: {
+      // This is green.A700 as hex.
+      main: "#11cb5f",
+    },
+  },
+});
 
 const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
-  const [urMove, setUrMove] = useState<boolean>();
+  const router = useRouter();
+  const [isUserMove, setIsUserMove] = useState<boolean>(false);
   const [hoverArr, setHoverArr] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [fallingArr, setFallingArr] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [fallingPieceArr, setFallingPieceArr] = useState<JSX.Element[]>([<></>]);
@@ -23,13 +47,18 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     [0, 0, 0, 0, 0, 0, 0],
   ]);
   const [userTurn, setUserTurn] = useState<boolean>(true);
+  const [callGameInfo, gameInfo] = useFetchGameInfosLazyQuery({ variables: { gameId } });
+  const [opponentName, setOpponentName] = useState<string>("");
+  const [moveMutation, moveMutationRes] = useMovePieceMutation();
+  const [sidePanelUIMsg, setSidePanelUIMsg] = useState<string>("loading...");
+  const meInfo = useMeQuery();
 
   const socket = io("http://localhost:4000/");
 
   socket.emit("joinRoom", { nickname: "HARDCODEDNICKNAME", roomId: gameId });
 
   socket.on("moveCompleted", () => {
-    setUrMove(false);
+    setIsUserMove(false);
   });
 
   //TODO: MOVE hoverButtons TO OWN COMPONENET
@@ -50,15 +79,16 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
             }}
             onClick={async () => {
               //TODO: Check if can move
+              if (!isUserMove) return;
               const newFArr = fallingArr;
               newFArr[i] = 1;
               setFallingArr(newFArr);
-              handlePieceFallingArr("yellow");
+              handlePieceFallingArr(playerColor);
               await sleep(700);
               setFallingArr([0, 0, 0, 0, 0, 0, 0]);
               setHoverArr([0, 0, 0, 0, 0, 0, 0]);
-              setFallingPieceArr([<></>])
-              handleFallenPieces();
+              setFallingPieceArr([<></>]);
+              handleFallenPieces(board);
 
               //TODO: SEND GAMEBOARD QUERY HERE
             }}
@@ -69,53 +99,52 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     return jsxArr;
   };
 
-  const handleFallenPieces = () => {
-    const newArr = []
+  const handleFallenPieces = (board: number[][]) => {
+    const newArr = [];
     for (let i = 0; i < 6; i++) {
       for (let j = 0; j < 7; j++) {
-        if (board[i][j] === 1){
-          console.log(i, j)
-          newArr.push(<img
-            src={`../../../static/red-piece.svg`}
-            alt={`red_piece.svg`}
-            onClick={() => {}}
-            style={{
-              gridColumn: j + 1,
-              gridRow: i + 1,
-            }}
-            key={i + "redfallen" + j}
-            className={styles.fallenPiece}
-          />
+        console.log("im working hard!");
+        console.log(board);
+        if (board[i][j] === 1) {
+          console.log(i, j);
+          newArr.push(
+            <img
+              src={`../../../static/red-piece.svg`}
+              alt={`red_piece.svg`}
+              onClick={() => {}}
+              style={{
+                gridColumn: j + 1,
+                gridRow: i + 1,
+              }}
+              key={i + "redfallen" + j}
+              className={styles.fallenPiece}
+            />
           );
         }
         if (board[i][j] === 2) {
-          console.log(i, j)
-          newArr.push(<img
-            src={`../../../static/yellow-piece.svg`}
-            alt={`yellow_piece.svg`}
-            onClick={() => {}}
-            style={{
-              gridColumn: j + 1,
-              gridRow: i + 1,
-            }}
-            key={i + j + "yellowfallen"}
-            className={styles.fallenPiece}
-          />
+          console.log(i, j);
+          newArr.push(
+            <img
+              src={`../../../static/yellow-piece.svg`}
+              alt={`yellow_piece.svg`}
+              onClick={() => {}}
+              style={{
+                gridColumn: j + 1,
+                gridRow: i + 1,
+              }}
+              key={i + j + "yellowfallen"}
+              className={styles.fallenPiece}
+            />
           );
-
         }
-        
       }
-      
     }
-    setFallenPieces(newArr)
-  }
-
-
-
+    setFallenPieces(newArr);
+  };
 
   //TODO: Reset state on move because of the placed/ 2 value
   const handleEnterAndLeave = (i: number, enter: boolean) => {
+    if (!isUserMove) return;
     setHoverArr(
       hoverArr.map((item, index) => {
         if (index === i) {
@@ -181,8 +210,8 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   }, [hoverArr]);
 
   const calculateCSSClass = (column: number) => {
-    if (!userTurn){
-      return "error"
+    if (!userTurn) {
+      return "error";
     }
     setUserTurn(false);
     let row = null;
@@ -211,7 +240,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
 
     setBoard(newArr);
 
-    
+    move();
 
     switch (row + 1) {
       case 1:
@@ -230,59 +259,94 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     return "f";
   };
 
+  const move = async () => {
+    try {
+      const res = await moveMutation({ variables: { gameBoard: board, gameId } });
+      console.log(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   //TODO: MOVE pieces TO OWN COMPONENET
 
-  const playerColor = "red";
+  useEffect(() => {
+    //Initializes the current game state on page load
+    callGameInfo({
+      variables: {
+        gameId: String(gameId),
+      },
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!gameInfo.data?.fetchGameInfos) {
+      console.log(gameInfo);
+      if (!gameInfo.loading && gameInfo.called) {
+        //If we cant find a game for this ID we've assumed theyve incorrectly typed in the game id so we can send them back to homepage
+        //we could possibly make this display a game not found error
+        router.push("/");
+      }
+      return;
+    }
+    if (!meInfo.data) {
+      return;
+    }
+    const resGameData = gameInfo.data.fetchGameInfos;
+    const resMeData = meInfo.data.me;
+
+    console.log("hi");
+    if (!doArrsMatch(resGameData.gameBoard, board)) {
+      const newBoard = resGameData.gameBoard.map((item) => {
+        return item;
+      });
+      setBoard(newBoard);
+      handleFallenPieces(newBoard);
+    }
+
+    if (resGameData.user2?.nickname !== opponentName && resGameData.user2) {
+      setOpponentName(resGameData.user2.nickname);
+    }
+
+    if (resGameData.whoseMove === resMeData._id) {
+      setIsUserMove(true);
+    } else {
+      setIsUserMove(false);
+    }
+
+    if (resMeData._id === resGameData.user1._id) {
+      playerColor = "red";
+    } else {
+      playerColor = "yellow";
+    }
+  }, [gameInfo.data]);
+
+  let playerColor = "red";
   const playerNumber = 1;
 
   return (
-    <div className={stylesI.gradientBG}>
-      <div className={styles.wholeCenterWrapper}>
-        <div className={styles.boardGrid}>
-          <div style={{ gridColumn: 3 }} className={styles.boardUIWrapper}>
-            <div className={styles.piecesBoardSeperator}>
-              <div className={styles.piecesHolder}>
-                {fallingPieceArr}
-                {hoverPieces}
-              </div>
+    <ThemeProvider theme={theme}>
+      <div className={stylesI.gradientBG}>
+        <div className={styles.wholeCenterWrapper}>
+          <div className={styles.boardGrid}>
+            <div style={{ gridColumn: 3 }} className={styles.boardUIWrapper}>
+              <div className={styles.piecesBoardSeperator}>
+                <div className={styles.piecesHolder}>
+                  {fallingPieceArr}
+                  {hoverPieces}
+                </div>
 
-              <img src='../../../static/board.svg' alt='msgSendIco' className={styles.gameBoard} />
-              <div className={styles.pieceArrGrid}>{hoverButtons()} {fallenPieces}</div>
-            </div>
-          </div>
-          <div style={{ gridColumn: 5, display: "grid" }} className={styles.sideUIWrapper}>
-            <div style={{ gridRow: 1 }} className={styles.playerUIWrapper}>
-              <div>{String(hoverArr)}</div>
-              <br />
-              <div>{String(board[0])}</div>
-              <div>{String(board[1])}</div>
-              <div>{String(board[2])}</div>
-              <div>{String(board[3])}</div>
-              <div>{String(board[4])}</div>
-              <div>{String(board[5])}</div>
-              <br />
-              <div>{String(userTurn)}</div>
-              <button
-                onClick={() => {
-                  setUserTurn(userTurn ? false : true);
-                }}
-              >
-                {" "}
-                change turn{" "}
-              </button>
-              <div style={{ gridRow: 2 }} className={styles.textChatWrapper}>
-                <div className={styles.sendWrapper}>
-                  <input className={styles.textChatArea} />
-                  <div className={styles.textChatButton}>
-                    <img src='../../../static/message-send.svg' alt='msgSendIco' className={styles.sendImg} />
-                  </div>
+                <img src='../../../static/board.svg' alt='msgSendIco' className={styles.gameBoard} />
+                <div className={styles.pieceArrGrid}>
+                  {hoverButtons()} {fallenPieces}
                 </div>
               </div>
             </div>
+            <SidePanelUI board={board} gameInfo={gameInfo} meInfo={meInfo} isUserMove={isUserMove} gameId={gameId}/>
           </div>
         </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 };
 
