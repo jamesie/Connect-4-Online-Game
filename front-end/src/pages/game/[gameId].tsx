@@ -55,7 +55,10 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
 
   const socket = io("http://localhost:4000/");
 
-  socket.emit("joinRoom", { nickname: "HARDCODEDNICKNAME", roomId: gameId });
+  if (meInfo.data?.me){
+    socket.emit("joinRoom", { nickname: meInfo.data.me.nickname, roomId: gameId });
+  }
+  
 
   socket.on("moveCompleted", () => {
     setIsUserMove(false);
