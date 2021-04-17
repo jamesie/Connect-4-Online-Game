@@ -17,6 +17,7 @@ import { doArrsMatch } from "../../utils/doArrsMatch";
 import SidePanelUI from "../../components/SidePanelUI";
 import { ThemeProvider } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
+import { findDifference } from "../../utils/FindDifference";
 
 const theme = createMuiTheme({
   palette: {
@@ -49,20 +50,34 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   const [userTurn, setUserTurn] = useState<boolean>(true);
   const [callGameInfo, gameInfo] = useFetchGameInfosLazyQuery({ variables: { gameId } });
   const [opponentName, setOpponentName] = useState<string>("");
+  const [playerColor, setPlayerColor] = useState<string>("red");
+  const [playerNumber, setPlayerNumber] = useState<number>(0);
   const [moveMutation, moveMutationRes] = useMovePieceMutation();
   const [sidePanelUIMsg, setSidePanelUIMsg] = useState<string>("loading...");
   const meInfo = useMeQuery();
 
   const socket = io("http://localhost:4000/");
 
-  if (meInfo.data?.me){
+  if (meInfo.data?.me) {
     socket.emit("joinRoom", { nickname: meInfo.data.me.nickname, roomId: gameId });
   }
-  
 
-  socket.on("moveCompleted", () => {
-    setIsUserMove(false);
+  socket.on("moveCompleted", async () => {
+    console.log("recieved move completion");
+    const previousBoard = board;
+    const a = await gameInfo.refetch({
+      gameId: String(gameId),
+    });
   });
+
+  const makePlayerMove = async () => {
+    try {
+      const res = await moveMutation({ variables: { gameBoard: board, gameId } });
+      socket.emit("completedMove");
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   //TODO: MOVE hoverButtons TO OWN COMPONENET
   const hoverButtons = () => {
@@ -72,7 +87,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
         <>
           <button
             className={styles.hoverButton}
-            style={{ gridColumn: i + 1, zIndex: 10 }}
+            style={{ gridColumn: i + 1, gridRow: 1, zIndex: 10 }}
             key={`buttonNo.${i + 1}`}
             onMouseEnter={() => {
               handleEnterAndLeave(i, true);
@@ -81,19 +96,8 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
               handleEnterAndLeave(i, false);
             }}
             onClick={async () => {
-              //TODO: Check if can move
               if (!isUserMove) return;
-              const newFArr = fallingArr;
-              newFArr[i] = 1;
-              setFallingArr(newFArr);
-              handlePieceFallingArr(playerColor);
-              await sleep(700);
-              setFallingArr([0, 0, 0, 0, 0, 0, 0]);
-              setHoverArr([0, 0, 0, 0, 0, 0, 0]);
-              setFallingPieceArr([<></>]);
-              handleFallenPieces(board);
-
-              //TODO: SEND GAMEBOARD QUERY HERE
+              updateFallingArr(i, playerColor, playerNumber, false);
             }}
           />
         </>
@@ -103,13 +107,11 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   };
 
   const handleFallenPieces = (board: number[][]) => {
+    console.log("thingy", board);
     const newArr = [];
     for (let i = 0; i < 6; i++) {
       for (let j = 0; j < 7; j++) {
-        console.log("im working hard!");
-        console.log(board);
         if (board[i][j] === 1) {
-          console.log(i, j);
           newArr.push(
             <img
               src={`../../../static/red-piece.svg`}
@@ -119,13 +121,12 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
                 gridColumn: j + 1,
                 gridRow: i + 1,
               }}
-              key={i + "redfallen" + j}
+              key={`${i}${j}redFallen`}
               className={styles.fallenPiece}
             />
           );
         }
         if (board[i][j] === 2) {
-          console.log(i, j);
           newArr.push(
             <img
               src={`../../../static/yellow-piece.svg`}
@@ -135,7 +136,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
                 gridColumn: j + 1,
                 gridRow: i + 1,
               }}
-              key={i + j + "yellowfallen"}
+              key={`${i}${j}yellowFallen`}
               className={styles.fallenPiece}
             />
           );
@@ -185,7 +186,6 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
 
       return [...addOn, ...fallingPieceArr];
     });
-    setFallingArr([0, 0, 0, 0, 0, 0, 0]);
   };
 
   //TODO: MOVE pieces TO OWN COMPONENET
@@ -216,7 +216,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     if (!userTurn) {
       return "error";
     }
-    setUserTurn(false);
+
     let row = null;
     for (let i = 0; i < 6; i++) {
       if (board[i + 1]) {
@@ -243,8 +243,10 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
 
     setBoard(newArr);
 
-    move();
+    return findStyle(row);
+  };
 
+  const findStyle = (row: number) => {
     switch (row + 1) {
       case 1:
         return styles.pieceDown1;
@@ -259,16 +261,21 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
       case 6:
         return styles.pieceDown6;
     }
-    return "f";
   };
 
-  const move = async () => {
-    try {
-      const res = await moveMutation({ variables: { gameBoard: board, gameId } });
-      console.log(res.data);
-    } catch (err) {
-      console.log(err);
+  const updateFallingArr = async (i: number, colorStr: string, playerColor: number ,recieved: boolean, newBoard?: number[][]) => {
+    const newFArr = fallingArr;
+    newFArr[i] = playerNumber;
+    setFallingArr(newFArr);
+    handlePieceFallingArr(colorStr);
+    await sleep(700);
+    if (!recieved){
+      await makePlayerMove();
     }
+    setFallingArr([0, 0, 0, 0, 0, 0, 0]);
+    setHoverArr([0, 0, 0, 0, 0, 0, 0]);
+    setFallingPieceArr([<></>]);
+    handleFallenPieces(!newBoard ? board : newBoard);
   };
 
   //TODO: MOVE pieces TO OWN COMPONENET
@@ -284,7 +291,6 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
 
   useEffect(() => {
     if (!gameInfo.data?.fetchGameInfos) {
-      console.log(gameInfo);
       if (!gameInfo.loading && gameInfo.called) {
         //If we cant find a game for this ID we've assumed theyve incorrectly typed in the game id so we can send them back to homepage
         //we could possibly make this display a game not found error
@@ -298,13 +304,16 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     const resGameData = gameInfo.data.fetchGameInfos;
     const resMeData = meInfo.data.me;
 
-    console.log("hi");
     if (!doArrsMatch(resGameData.gameBoard, board)) {
+      const oldBoard = board;
+
       const newBoard = resGameData.gameBoard.map((item) => {
         return item;
       });
+      const difference = findDifference(newBoard, oldBoard);
+
       setBoard(newBoard);
-      handleFallenPieces(newBoard);
+      updateFallingArr(difference[1], playerColor === "red" ? "yellow" : "red", playerNumber === 1 ? 2 : 1, true, newBoard)
     }
 
     if (resGameData.user2?.nickname !== opponentName && resGameData.user2) {
@@ -316,16 +325,17 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     } else {
       setIsUserMove(false);
     }
+    if (resGameData.gameBoard) {
+    }
 
     if (resMeData._id === resGameData.user1._id) {
-      playerColor = "red";
+      setPlayerColor("red");
+      setPlayerNumber(1);
     } else {
-      playerColor = "yellow";
+      setPlayerColor("yellow");
+      setPlayerNumber(2);
     }
   }, [gameInfo.data]);
-
-  let playerColor = "red";
-  const playerNumber = 1;
 
   return (
     <ThemeProvider theme={theme}>
@@ -345,7 +355,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
                 </div>
               </div>
             </div>
-            <SidePanelUI board={board} gameInfo={gameInfo} meInfo={meInfo} isUserMove={isUserMove} gameId={gameId}/>
+            <SidePanelUI board={board} gameInfo={gameInfo} meInfo={meInfo} isUserMove={isUserMove} gameId={gameId} />
           </div>
         </div>
       </div>
