@@ -71,11 +71,13 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   });
 
   const makePlayerMove = async () => {
+    console.log(board)
     try {
-      const res = await moveMutation({ variables: { gameBoard: board, gameId } });
+      const res = await moveMutation({ variables: { gameBoard: board, gameId } })
       socket.emit("completedMove");
     } catch (err) {
       console.log(err);
+      
     }
   };
 
@@ -98,6 +100,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
             onClick={async () => {
               if (!isUserMove) return;
               updateFallingArr(i, playerColor, playerNumber, false);
+              handleFallenPieces(board)
             }}
           />
         </>
@@ -107,7 +110,6 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   };
 
   const handleFallenPieces = (board: number[][]) => {
-    console.log("thingy", board);
     const newArr = [];
     for (let i = 0; i < 6; i++) {
       for (let j = 0; j < 7; j++) {
@@ -176,7 +178,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
                 gridRow: 1,
               }}
               key={i + "falling"}
-              className={calculateCSSClass(i)}
+              className={calculateCSSClass(i, color)}
             />
           );
         } else {
@@ -212,7 +214,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     );
   }, [hoverArr]);
 
-  const calculateCSSClass = (column: number) => {
+  const calculateCSSClass = (column: number, color: string) => {
     if (!userTurn) {
       return "error";
     }
@@ -232,7 +234,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
 
     const newRow = board[row].map((item, index) => {
       if (index === column) {
-        return playerNumber;
+        return color === 'red' ? 1 : 2;
       } else {
         return item;
       }
@@ -263,7 +265,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     }
   };
 
-  const updateFallingArr = async (i: number, colorStr: string, playerColor: number ,recieved: boolean, newBoard?: number[][]) => {
+  const updateFallingArr = async (i: number, colorStr: string, playerColor: number ,recieved: boolean) => {
     const newFArr = fallingArr;
     newFArr[i] = playerNumber;
     setFallingArr(newFArr);
@@ -275,7 +277,6 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     setFallingArr([0, 0, 0, 0, 0, 0, 0]);
     setHoverArr([0, 0, 0, 0, 0, 0, 0]);
     setFallingPieceArr([<></>]);
-    handleFallenPieces(!newBoard ? board : newBoard);
   };
 
   //TODO: MOVE pieces TO OWN COMPONENET
@@ -312,8 +313,9 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
       });
       const difference = findDifference(newBoard, oldBoard);
 
+      updateFallingArr(difference[1], playerColor === "red" ? "yellow" : "red", playerNumber === 1 ? 2 : 1, true)
       setBoard(newBoard);
-      updateFallingArr(difference[1], playerColor === "red" ? "yellow" : "red", playerNumber === 1 ? 2 : 1, true, newBoard)
+      handleFallenPieces(newBoard)
     }
 
     if (resGameData.user2?.nickname !== opponentName && resGameData.user2) {
@@ -348,6 +350,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
                   {fallingPieceArr}
                   {hoverPieces}
                 </div>
+                <button onClick={() => console.log(board)}>dddddddddddddd</button>
 
                 <img src='../../../static/board.svg' alt='msgSendIco' className={styles.gameBoard} />
                 <div className={styles.pieceArrGrid}>
