@@ -249,6 +249,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   };
 
   const findStyle = (row: number) => {
+    console.log(row + 1)
     switch (row + 1) {
       case 1:
         return styles.pieceDown1;
@@ -276,7 +277,6 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     }
     setFallingArr([0, 0, 0, 0, 0, 0, 0]);
     setHoverArr([0, 0, 0, 0, 0, 0, 0]);
-    setFallingPieceArr([<></>]);
   };
 
   //TODO: MOVE pieces TO OWN COMPONENET
