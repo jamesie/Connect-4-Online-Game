@@ -1,6 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
+@value boardHeight: 398px;
 
 /* ________________DOESNT MATTER_________________*/
+
 
 .wholeCenterWrapper {
   place-items: center;
@@ -158,39 +160,94 @@
 }
 
 .pieceDown1{
-  animation: pieceDown1 0.3s linear 0s 1 normal forwards;
+  animation: pieceDown1 0.2s linear 0s 1 normal forwards;
   z-index: 0;
 }
 
-
-
 @keyframes pieceDown1 { 
   0% {transform: translateY(0)}
-  50% {transform: translateY(200px);}
-  60% {transform: translateY(180px);}
-  80% {transform: translateY(200px);}
-  90% {transform: translateY(190px);}
-  100% {transform: translateY(200px);}
+  50% {transform: translateY(calc(calc(boardHeight - calc( 5 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  60% {transform: translateY(calc(calc(boardHeight - calc( 5 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.02) ));}
+  80% {transform: translateY(calc(calc(boardHeight - calc( 5 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  90% {transform: translateY(calc(calc(boardHeight - calc( 5 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.01) ));}
+  100% {transform: translateY(calc(calc(boardHeight - calc( 5 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+
 } 
 
 .pieceDown2 {
+  animation: pieceDown2 0.2s linear 0s 1 normal forwards;
+  z-index: 0;
 }
+
+@keyframes pieceDown2 { 
+  0% {transform: translateY(0)}
+  50% {transform: translateY(calc(calc(boardHeight - calc( 4 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  60% {transform: translateY(calc(calc(boardHeight - calc( 4 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.15) ));}
+  80% {transform: translateY(calc(calc(boardHeight - calc( 4 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  90% {transform: translateY(calc(calc(boardHeight - calc( 4 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.07) ));}
+  100% {transform: translateY(calc(calc(boardHeight - calc( 4 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+
+} 
 .pieceDown3 {
+  animation: pieceDown3 0.2s linear 0s 1 normal forwards;
+  z-index: 0;
 }
+
+@keyframes pieceDown3 { 
+  0% {transform: translateY(0)}
+  50% {transform: translateY(calc(calc(boardHeight - calc( 3 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  60% {transform: translateY(calc(calc(boardHeight - calc( 3 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.15) ));}
+  80% {transform: translateY(calc(calc(boardHeight - calc( 3 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  90% {transform: translateY(calc(calc(boardHeight - calc( 3 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.07) ));}
+  100% {transform: translateY(calc(calc(boardHeight - calc( 3 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+
+} 
+
 .pieceDown4 {
+  animation: pieceDown4 0.2s linear 0s 1 normal forwards;
+  z-index: 0;
 }
+
+@keyframes pieceDown4 { 
+  0% {transform: translateY(0)}
+  50% {transform: translateY(calc(calc(boardHeight - calc( 2 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  60% {transform: translateY(calc(calc(boardHeight - calc( 2 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.15) ));}
+  80% {transform: translateY(calc(calc(boardHeight - calc( 2 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  90% {transform: translateY(calc(calc(boardHeight - calc( 2 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.07) ));}
+  100% {transform: translateY(calc(calc(boardHeight - calc( 2 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+
+} 
+
 .pieceDown5 {
+  animation: pieceDown5 0.2s linear 0s 1 normal forwards;
+  z-index: 0;
 }
+
+@keyframes pieceDown5 { 
+  0% {transform: translateY(0)}
+  50% {transform: translateY(calc(calc(boardHeight - calc( 1 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  60% {transform: translateY(calc(calc(boardHeight - calc( 1 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.15) ));}
+  80% {transform: translateY(calc(calc(boardHeight - calc( 1 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  90% {transform: translateY(calc(calc(boardHeight - calc( 1 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.07) ));}
+  100% {transform: translateY(calc(calc(boardHeight - calc( 1 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+
+} 
+
 .pieceDown6{
-  animation: pieceDown6 0.4s linear 0s 1 normal forwards;
+  animation: pieceDown6 0.2s linear 0s 1 normal forwards;
   z-index: 0;
 }
 
 @keyframes pieceDown6 { 
   0% {transform: translateY(0)}
-  50% {transform: translateY(398px);}
-  60% {transform: translateY(368px);}
-  80% {transform: translateY(398px);}
-  90% {transform: translateY(378px);}
-  100% {transform: translateY(398px);}
+  50% {transform: translateY(calc(calc(boardHeight - calc( 0 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  60% {transform: translateY(calc(calc(boardHeight - calc( 0 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.15) ));}
+  80% {transform: translateY(calc(calc(boardHeight - calc( 0 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+  90% {transform: translateY(calc(calc(boardHeight - calc( 0 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.07) ));}
+  100% {transform: translateY(calc(calc(boardHeight - calc( 0 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
 } 
+
+
+
+
+
