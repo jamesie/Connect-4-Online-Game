@@ -6,7 +6,8 @@ import { getMongoRepository } from "typeorm";
 import { ObjectId } from "mongodb";
 import { isAuth } from "../utils/isAuth";
 import dotenv from "dotenv";
-import fetch from 'node-fetch'
+import fetch from "node-fetch";
+import { isCompositeType } from "graphql";
 dotenv.config();
 
 @Resolver()
@@ -50,20 +51,20 @@ export class gameResolver {
 
   @Mutation(() => Game, { nullable: true })
   @UseMiddleware(isAuth)
+  //@ts-ignore
   async createGame(@Ctx() { req }: MyContext, @Arg("googleCaptchaToken") captchaToken: string): Promise<Game | null> {
+    // const secret = process.env.RECAPTCHA_SECRET_KEY;
 
-    const secret = process.env.RECAPTCHA_SECRET_KEY;
+    // const grc = await fetch(
+    //   `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${captchaToken}`,
+    //   { method: "POST" }
+    // );
 
-    const grc = await fetch(
-      `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${captchaToken}`,
-      { method: "POST" }
-    );
+    // const datares = await grc.json()
 
-    const datares = await grc.json()
-
-    if (!datares.success) {
-      throw new Error("Beep boop ;)");
-    }
+    // if (!datares.success) {
+    //   throw new Error("Beep boop ;)");
+    // }
 
     const game = new Game();
     // GameBoard: 0 means empty, 1 means player1/creator, 2 means joiner of game
@@ -131,7 +132,7 @@ export class gameResolver {
     return game;
   }
 
-  @Query(() => Game, {nullable: true})
+  @Query(() => Game, { nullable: true })
   @UseMiddleware(isAuth)
   async fetchGameInfos(@Arg("gameId") gameId: string, @Ctx() { req }: MyContext): Promise<Game | null> {
     const _id: ObjectId = new ObjectId(String(gameId));
@@ -160,7 +161,6 @@ export class gameResolver {
     }
 
     return game;
-   
   }
 
   @Mutation(() => Game)
@@ -182,21 +182,30 @@ export class gameResolver {
       return null;
     }
 
-    if (!req.session.userId?.equals(game.user1Id) && !req.session.userId?.equals(game.user2Id)) {
+    if (req.session.userId != game.user1Id && req.session.userId != game.user2Id) {
       throw new Error("Hmm pretty sus, you got any form of identification on you?");
     }
 
-    if (req.session.userId?.equals(game.whoseMove)) {
+    if (req.session.userId != game.whoseMove) {
       throw new Error("Not your move mr hacker!");
     }
 
-    if (!isMoveLegal(game.gameBoard, proposedGameBoard, req.session.userId?.equals(game.user1Id) ? 1 : 2)) {
+    console.log("here2");
+    if (!isMoveLegal(game.gameBoard, proposedGameBoard, req.session.userId == game.user1Id ? 1 : 2)) {
       throw new Error("Illegal Move Homie");
     }
 
     //  console.log("not illegal")
 
-    await getMongoRepository(Game).updateOne({ _id }, { $set: { gameBoard: proposedGameBoard } });
+    await getMongoRepository(Game).updateOne(
+      { _id },
+      {
+        $set: {
+          gameBoard: proposedGameBoard,
+          whoseMove: req.session.userId == game.user1Id ? game.user2Id : game.user1Id,
+        },
+      }
+    );
 
     return game;
   }
@@ -204,6 +213,8 @@ export class gameResolver {
 
 const isMoveLegal = (curr: number[][], proposed: number[][], userColor: number): boolean => {
   let differences: number[][] = [];
+  console.log("proposed", proposed)
+  console.log("curr", curr)
 
   //finding differences between boards
   for (let i = 0; i < curr.length; i++) {
@@ -227,19 +238,19 @@ const isMoveLegal = (curr: number[][], proposed: number[][], userColor: number):
   const y: number = differences[0][0];
   const x: number = differences[0][1];
 
-  // console.log("curr", curr)
-  // console.log("proposed", proposed)
-
-  // console.log("y: ", y, "x: ", x)
+  // console.log("y: ", y, "x: ", x);
 
   if (curr[y][x] !== 0) {
     //move is replacing a piece / illegal move
     console.log("move is replacing a piece");
     return false;
   }
-  if (y !== 5 /* placed piece on bottom of board */ || curr[y + 1][x] === 0 /* makes sure piece isnt floating */) {
-    console.log("air move or some shit");
-    return false;
+
+  if (y !== 5 /* placed piece on bottom of board */) {
+    if (curr[y + 1][x] === 0 /* makes sure piece isnt floating */) {
+      console.log("air move or some shit");
+      return false;
+    }
   }
 
   /* GAMEBOARD EXAMPLE
