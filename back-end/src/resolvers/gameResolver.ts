@@ -190,9 +190,29 @@ export class gameResolver {
       throw new Error("Not your move mr hacker!");
     }
 
+    if (game.whoWon) {
+      throw new Error("Game has been won!");
+    }
+
+    const refereeResponse = referee(game.gameBoard, proposedGameBoard, req.session.userId == game.user1Id ? 1 : 2);
+
     console.log("here2");
-    if (!isMoveLegal(game.gameBoard, proposedGameBoard, req.session.userId == game.user1Id ? 1 : 2)) {
+    if (refereeResponse === 0) {
       throw new Error("Illegal Move Homie");
+    }
+
+    if (refereeResponse === 2) {
+      // Player won
+      await getMongoRepository(Game).updateOne(
+        { _id },
+        {
+          $set: {
+            gameBoard: proposedGameBoard,
+            whoWon: req.session.userId == game.user1Id ? game.user1Id : game.user2Id,
+            whoseMove: req.session.userId == game.user1Id ? game.user2Id : game.user1Id,
+          },
+        }
+      );
     }
 
     //  console.log("not illegal")
@@ -211,10 +231,8 @@ export class gameResolver {
   }
 }
 
-const isMoveLegal = (curr: number[][], proposed: number[][], userColor: number): boolean => {
+const referee = (curr: number[][], proposed: number[][], userColor: number): number => {
   let differences: number[][] = [];
-  console.log("proposed", proposed)
-  console.log("curr", curr)
 
   //finding differences between boards
   for (let i = 0; i < curr.length; i++) {
@@ -227,12 +245,12 @@ const isMoveLegal = (curr: number[][], proposed: number[][], userColor: number):
 
   if (differences.length > 1 || differences.length == 0) {
     console.log("no move or hacked board");
-    return false;
+    return 0;
   }
 
   if (proposed[differences[0][0]][differences[0][1]] !== userColor) {
     console.log("move color bug");
-    return false;
+    return 0;
   }
 
   const y: number = differences[0][0];
@@ -243,13 +261,13 @@ const isMoveLegal = (curr: number[][], proposed: number[][], userColor: number):
   if (curr[y][x] !== 0) {
     //move is replacing a piece / illegal move
     console.log("move is replacing a piece");
-    return false;
+    return 0;
   }
 
   if (y !== 5 /* placed piece on bottom of board */) {
     if (curr[y + 1][x] === 0 /* makes sure piece isnt floating */) {
       console.log("air move or some shit");
-      return false;
+      return 0;
     }
   }
 
@@ -262,5 +280,74 @@ const isMoveLegal = (curr: number[][], proposed: number[][], userColor: number):
   [1, 0, 0, 1, 0, 0, 2],
   */
 
-  return true;
+  if (hasWon(proposed, userColor)) {
+    return 2;
+  }
+
+  return 1;
+};
+
+const hasWon = (board: number[][], userColor: number): boolean => {
+  const HEIGHT = board.length;
+  const WIDTH = board[0].length;
+
+  for (let i = 0; i < board.length; i++) {
+    for (let j = 0; j < board[0].length; j++) {
+      var counter1 = 0;
+      var counter2 = 0;
+      var counter3 = 0;
+      var counter4 = 0;
+
+      if (board[i][j] === userColor) {
+        //up
+        if (j + 3 < WIDTH) {
+          for (let k = 0; k < 4; k++) {
+            if (board[i][j + k] !== userColor) {
+              break;
+            }
+            counter1++;
+          }
+        }
+
+
+        //right
+        if (i + 3 < HEIGHT) {
+          for (let k = 0; k < 4; k++) {
+            if (board[i + k][j] !== userColor) {
+              break;
+            }
+            counter2++;
+          }
+        }
+
+        //upleft
+        if (j + 3 < WIDTH && i + 3 < HEIGHT) {
+          for (let k = 0; k < 4; k++) {
+            console.log(k)
+            if (board[i + k][j + k] !== userColor) {
+              break;
+            }
+            console.log(k)
+            counter3++;
+          }
+        } 
+
+
+        //upright
+        if (i - 3 > 0 && j + 3 < WIDTH) {
+          
+          for (let k = 0; k < 4; k++) {
+            console.log(i , j , i + k, j + k)
+            if (board[i - k][j + k] !== userColor) {
+              break;
+            }
+            counter4++;
+          }
+        }
+      }
+      if (counter1 === 4 || counter2 === 4 || counter3 === 4 || counter4 === 4) return true;
+    }
+  }
+
+  return false;
 };
