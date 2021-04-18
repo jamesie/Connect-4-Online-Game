@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { HTMLAttributes, useEffect, useState } from "react";
+import React, { HTMLAttributes, useEffect, useRef, useState } from "react";
 import styles from "./gamePage.module.css";
 import { io, Socket } from "socket.io-client";
 import stylesI from "../index.module.css";
@@ -54,13 +54,18 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   const [playerNumber, setPlayerNumber] = useState<number>(0);
   const [moveMutation, moveMutationRes] = useMovePieceMutation();
   const [sidePanelUIMsg, setSidePanelUIMsg] = useState<string>("loading...");
+  const [hasSocketBeenEmitted, setHasSocketBeenEmitted] = useState<boolean>(false)
   const meInfo = useMeQuery();
+  const gameInfoRef = useRef(gameInfo);
+  const meInfoRef = useRef(meInfo);
 
   const socket = io("http://localhost:4000/");
 
-  if (meInfo.data?.me) {
+  if (meInfo.data?.me && !hasSocketBeenEmitted) {
     socket.emit("joinRoom", { nickname: meInfo.data.me.nickname, roomId: gameId });
+    setHasSocketBeenEmitted(true)
   }
+
 
   socket.on("moveCompleted", async () => {
     console.log("recieved move completion");
@@ -70,11 +75,18 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     });
   });
 
+  socket.on("someoneJoinedRoom", async () => {
+    const a = await gameInfo.refetch({
+      gameId: String(gameId),
+    });
+
+  })
+
   const makePlayerMove = async () => {
     console.log(board)
     try {
       const res = await moveMutation({ variables: { gameBoard: board, gameId } })
-      socket.emit("completedMove");
+      socket.emit("completedMove", { roomId: gameId });
     } catch (err) {
       console.log(err);
       
@@ -309,6 +321,8 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     }
     const resGameData = gameInfo.data.fetchGameInfos;
     const resMeData = meInfo.data.me;
+    gameInfoRef.current = gameInfo
+    meInfoRef.current = meInfo
 
     if (!doArrsMatch(resGameData.gameBoard, board)) {
       const updateBoard = async() => {
@@ -351,6 +365,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
       setPlayerColor("yellow");
       setPlayerNumber(2);
     }
+
   }, [gameInfo.data]);
 
   return (
@@ -364,7 +379,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
                   {fallingPieceArr}
                   {hoverPieces}
                 </div>
-                <button onClick={() => console.log(board)}>dddddddddddddd</button>
+                <button onClick={() => socket.emit("aaa")}>dddddddddddddd</button>
 
                 <img src='../../../static/board.svg' alt='msgSendIco' className={styles.gameBoard} />
                 <div className={styles.pieceArrGrid}>
@@ -372,7 +387,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
                 </div>
               </div>
             </div>
-            <SidePanelUI board={board} gameInfo={gameInfo} meInfo={meInfo} isUserMove={isUserMove} gameId={gameId} />
+            <SidePanelUI board={board} gameInfo={gameInfoRef.current} meInfo={meInfoRef.current} isUserMove={isUserMove} gameId={gameId} />
           </div>
         </div>
       </div>

@@ -21,6 +21,7 @@ export type Game = {
   gameBoard?: Maybe<Array<Array<Scalars['Int']>>>;
   moveNum?: Maybe<Scalars['Int']>;
   whoseMove: Scalars['ID'];
+  whoWon?: Maybe<Scalars['ID']>;
 };
 
 export type Mutation = {
@@ -146,7 +147,7 @@ export type FetchGameInfosQuery = (
   { __typename?: 'Query' }
   & { fetchGameInfos?: Maybe<(
     { __typename?: 'Game' }
-    & Pick<Game, '_id' | 'gameBoard' | 'whoseMove'>
+    & Pick<Game, '_id' | 'gameBoard' | 'whoseMove' | 'whoWon'>
     & { user1: (
       { __typename?: 'User' }
       & Pick<User, '_id' | 'nickname'>
@@ -325,6 +326,7 @@ export const FetchGameInfosDocument = gql`
     _id
     gameBoard
     whoseMove
+    whoWon
     user1 {
       _id
       nickname

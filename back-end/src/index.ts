@@ -11,11 +11,9 @@ import { ApolloServer } from "apollo-server-express";
 import { gameResolver } from "./resolvers/gameResolver";
 import { buildSchema } from "type-graphql";
 import { User } from "./entites/User";
-import { Server, Socket } from 'socket.io';
-
+import { Server, Socket } from "socket.io";
 
 const PORT = 4000;
-
 
 const main = async () => {
   const conn = await createConnection({
@@ -38,11 +36,9 @@ const main = async () => {
   const corsOptions = {
     origin: "http://localhost:3000",
     credentials: true,
-  }
+  };
 
-  app.use(
-    cors(corsOptions)
-  );
+  app.use(cors(corsOptions));
 
   app.use(
     session({
@@ -82,24 +78,24 @@ const main = async () => {
 
   const io = new Server(http, {
     cors: corsOptions,
-
   });
 
   io.on("connection", (socket: Socket) => {
-    socket.on('joinRoom', ({ nickname, roomId }: JoinRoomType) => {
-      console.log(`${nickname} Joined Room ${roomId}!`)
-      socket.join(roomId)
-      socket.on('completedMove', () => {
-        socket.broadcast.to(roomId).emit('moveCompleted')
-      })
-    })
-    
+    socket.on("joinRoom", ({ nickname, roomId }: JoinRoomType) => {
+      console.log(`${nickname} Joined Room ${roomId}!`);
+      socket.join(roomId);
+      socket.broadcast.to(roomId).emit("someoneJoinedRoom");
+    });
+
+    socket.on("completedMove", ({ roomId }) => {
+      socket.broadcast.to(roomId).emit("moveCompleted");
+    });
   });
 
   type JoinRoomType = {
-    nickname: string
-    roomId: string
-  }
+    nickname: string;
+    roomId: string;
+  };
 };
 
 main().catch((err) => console.log(err));

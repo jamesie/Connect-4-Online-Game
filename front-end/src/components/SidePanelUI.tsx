@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import styles from "../pages/game/gamePage.module.css";
 import { MeQueryResult, FetchGameInfosLazyQueryHookResult, FetchGameInfosQuery, Exact } from "../types";
 import NextLink from "next/link";
+import { Textfit } from 'react-textfit';
+
 
 import { CircularProgress, createMuiTheme } from "@material-ui/core";
 
@@ -26,12 +28,30 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ board, gameInfo, meInfo, isUs
       setWhosMoveJSX(
         <>
           <div>
-            <div className={styles.whosTurnFont}>No one has joined your game!</div>
-            <div className={styles.whosTurnFont}>Send a friend this link:</div>
-            <div className={styles.whosTurnFont}>www.connect4online.xyz/join/</div>
-            <div className={styles.whosTurnFont}>{gameId}</div>
+            <text className={styles.whosTurnFont}>No one has joined your game!</text>
+            <text className={styles.whosTurnFont}>Send a friend this link:</text>
+            <text className={styles.whosTurnFont}>www.connect4online.xyz/join/</text>
+            <text className={styles.whosTurnFont}>{gameId}</text>
           </div>
           <CircularProgress color='primary' />
+        </>
+      );
+    } else {
+      setWhosMoveJSX(
+        <>
+          <div className={styles.textWrapper}>
+
+            <Textfit mode="multi" className={styles.whosTurnFont} style={{height: '150px', width: "250px"}}>
+              {gameInfo?.data?.fetchGameInfos?.whoseMove === meInfo?.data?.me?._id
+                ? ` It's Your Turn!`
+                : ` It's ${
+                    gameInfo?.data?.fetchGameInfos?.user1._id === meInfo?.data?.me?._id
+                      ? gameInfo?.data?.fetchGameInfos?.user2.nickname.toUpperCase()
+                      : gameInfo?.data?.fetchGameInfos?.user1.nickname.toUpperCase()
+                  }'s Turn!`}
+            </Textfit>
+
+          </div>
         </>
       );
     }
@@ -46,9 +66,9 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ board, gameInfo, meInfo, isUs
       <div style={{ gridRow: 2 }} className={styles.textChatWrapper}>
         <div className={styles.sendWrapper}>
           <input className={styles.textChatArea} />
-          <div className={styles.textChatButton}>
+          <button className={styles.textChatButton}>
             <img src='../../../static/message-send.svg' alt='msgSendIco' className={styles.sendImg} />
-          </div>
+          </button>
         </div>
       </div>
     </div>
