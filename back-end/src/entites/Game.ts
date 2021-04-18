@@ -28,6 +28,10 @@ export class Game extends BaseEntity {
   @Column()
   whoseMove: ObjectId;
 
+  @Field(() => ID, { nullable: true })
+  @Column()
+  whoWon: ObjectId;
+
   @Column()
   user1Id!: ObjectId
 
