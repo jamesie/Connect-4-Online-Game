@@ -133,8 +133,7 @@ export class gameResolver {
   }
 
   @Query(() => Game, { nullable: true })
-  @UseMiddleware(isAuth)
-  async fetchGameInfos(@Arg("gameId") gameId: string, @Ctx() { req }: MyContext): Promise<Game | null> {
+  async fetchGameInfos(@Arg("gameId") gameId: string): Promise<Game | null> {
     const _id: ObjectId = new ObjectId(String(gameId));
 
     const game = await getMongoRepository(Game).findOne({ where: { _id } });
@@ -154,10 +153,6 @@ export class gameResolver {
       game.user2 = null;
     } else {
       game.user2 = user2;
-    }
-
-    if (!(req.session.userId == game.user1Id) && !(req.session.userId == game.user2Id)) {
-      throw new Error("Hmm pretty sus, you got any form of identification on you?");
     }
 
     return game;
