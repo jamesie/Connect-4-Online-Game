@@ -102,6 +102,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
               await updateFallingArr(i, playerColor, playerNumber, false);
               handleFallenPieces(board)
               setFallingPieceArr([<></>])
+              setIsUserMove(false)
             }}
           />
         </>
