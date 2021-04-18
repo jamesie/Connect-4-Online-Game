@@ -48,7 +48,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     [0, 0, 0, 0, 0, 0, 0],
   ]);
   const [userTurn, setUserTurn] = useState<boolean>(true);
-  const [callGameInfo, gameInfo] = useFetchGameInfosLazyQuery({ variables: { gameId } });
+  const [callGameInfo, gameInfo] = useFetchGameInfosLazyQuery({ variables: { gameId }, fetchPolicy: "no-cache" });
   const [opponentName, setOpponentName] = useState<string>("");
   const [playerColor, setPlayerColor] = useState<string>("red");
   const [playerNumber, setPlayerNumber] = useState<number>(0);
@@ -99,8 +99,9 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
             }}
             onClick={async () => {
               if (!isUserMove) return;
-              updateFallingArr(i, playerColor, playerNumber, false);
+              await updateFallingArr(i, playerColor, playerNumber, false);
               handleFallenPieces(board)
+              setFallingPieceArr([<></>])
             }}
           />
         </>
@@ -274,9 +275,12 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     await sleep(700);
     if (!recieved){
       await makePlayerMove();
+    } else {
+      setFallingPieceArr([<></>])
     }
     setFallingArr([0, 0, 0, 0, 0, 0, 0]);
     setHoverArr([0, 0, 0, 0, 0, 0, 0]);
+  
   };
 
   //TODO: MOVE pieces TO OWN COMPONENET
@@ -306,28 +310,37 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     const resMeData = meInfo.data.me;
 
     if (!doArrsMatch(resGameData.gameBoard, board)) {
-      const oldBoard = board;
+      const updateBoard = async() => {
+        const oldBoard = board;
 
-      const newBoard = resGameData.gameBoard.map((item) => {
-        return item;
-      });
-      const difference = findDifference(newBoard, oldBoard);
+        const newBoard = resGameData.gameBoard.map((item) => {
+          return item;
+        });
+        const difference = findDifference(newBoard, oldBoard);
 
-      updateFallingArr(difference[1], playerColor === "red" ? "yellow" : "red", playerNumber === 1 ? 2 : 1, true)
-      setBoard(newBoard);
-      handleFallenPieces(newBoard)
+        await updateFallingArr(difference[1], playerColor === "red" ? "yellow" : "red", playerNumber === 1 ? 2 : 1, true)
+
+        setBoard(newBoard);
+        handleFallenPieces(newBoard)
+
+      }
+      updateBoard();
+      
     }
 
     if (resGameData.user2?.nickname !== opponentName && resGameData.user2) {
       setOpponentName(resGameData.user2.nickname);
     }
+   
 
     if (resGameData.whoseMove === resMeData._id) {
       setIsUserMove(true);
     } else {
       setIsUserMove(false);
     }
-    if (resGameData.gameBoard) {
+
+    if (resGameData.whoWon) {
+      setIsUserMove(false)
     }
 
     if (resMeData._id === resGameData.user1._id) {
