@@ -36,7 +36,26 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ board, gameInfo, meInfo, isUs
           <CircularProgress color='primary' />
         </>
       );
-    } else {
+    } else if (gameInfo?.data?.fetchGameInfos?.whoWon) {
+      setWhosMoveJSX(
+        <>
+          <div className={styles.textWrapper}>
+
+            <Textfit mode="multi" className={styles.whosTurnFont} style={{height: '150px', width: "250px"}}>
+              {gameInfo?.data?.fetchGameInfos?.whoWon === meInfo?.data?.me?._id
+                ? ` You Won! Congratulations!`
+                : ` Opponent ${
+                    gameInfo?.data?.fetchGameInfos?.user1._id === meInfo?.data?.me?._id
+                      ? gameInfo?.data?.fetchGameInfos?.user2.nickname.toUpperCase()
+                      : gameInfo?.data?.fetchGameInfos?.user1.nickname.toUpperCase()
+                  } won! Unlucky!`}
+            </Textfit>
+
+          </div>
+        </>
+      );
+
+    }else {
       setWhosMoveJSX(
         <>
           <div className={styles.textWrapper}>
