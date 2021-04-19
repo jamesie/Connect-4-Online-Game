@@ -59,7 +59,12 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   const gameInfoRef = useRef(gameInfo);
   const meInfoRef = useRef(meInfo);
 
-  const socket = io("http://localhost:4000/");
+  const socket = io("http://localhost:4000/", {
+    timeout: 2000,
+    transports: ['websocket']
+    
+
+  });
 
   if (meInfo.data?.me && !hasSocketBeenEmitted) {
     socket.emit("joinRoom", { nickname: meInfo.data.me.nickname, roomId: gameId });
@@ -83,10 +88,11 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   })
 
   const makePlayerMove = async () => {
-    console.log(board)
+    
     try {
       const res = await moveMutation({ variables: { gameBoard: board, gameId } })
       socket.emit("completedMove", { roomId: gameId });
+      console.log("res", res)
     } catch (err) {
       console.log(err);
       
