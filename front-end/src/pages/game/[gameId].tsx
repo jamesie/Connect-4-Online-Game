@@ -1,35 +1,19 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { HTMLAttributes, useEffect, useRef, useState } from "react";
-import styles from "./gamePage.module.css";
-import { io, Socket } from "socket.io-client";
-import stylesI from "../index.module.css";
-import { Button, createMuiTheme } from "@material-ui/core";
-import { sleep } from "../../utils/sleep";
+import React, { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
+import SidePanelUI from "../../components/SidePanelUI";
 import {
   useFetchGameInfosLazyQuery,
   useMeQuery,
-  useMovePieceMutation,
-  FetchGameInfosQueryResult,
-  FetchGameInfosLazyQueryHookResult,
+  useMovePieceMutation
 } from "../../types";
 import { doArrsMatch } from "../../utils/doArrsMatch";
-import SidePanelUI from "../../components/SidePanelUI";
-import { ThemeProvider } from "@material-ui/styles";
-import { grey } from "@material-ui/core/colors";
 import { findDifference } from "../../utils/FindDifference";
+import { sleep } from "../../utils/sleep";
+import stylesI from "../index.module.css";
+import styles from "./gamePage.module.css";
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: grey[50],
-    },
-    secondary: {
-      // This is green.A700 as hex.
-      main: "#11cb5f",
-    },
-  },
-});
 
 const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   const router = useRouter();
@@ -375,7 +359,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   }, [gameInfo.data]);
 
   return (
-    <ThemeProvider theme={theme}>
+    
       <div className={stylesI.gradientBG}>
         <div className={styles.wholeCenterWrapper}>
           <div className={styles.boardGrid}>
@@ -397,7 +381,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
           </div>
         </div>
       </div>
-    </ThemeProvider>
+  
   );
 };
 
