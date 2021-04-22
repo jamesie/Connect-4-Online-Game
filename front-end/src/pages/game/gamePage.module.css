@@ -3,7 +3,6 @@
 
 /* ________________DOESNT MATTER_________________*/
 
-
 .wholeCenterWrapper {
   place-items: center;
   display: grid;
@@ -49,8 +48,7 @@
 .textChatWrapper {
   margin: auto;
   border: 5px solid white;
-  width: 250px;
-  height: 200px;
+  height: 95%;
   display: grid;
   grid-template-rows: 80% 20%;
 }
@@ -63,7 +61,7 @@
 .sendWrapper {
   grid-row: 2;
   width: auto;
-  height: 20%;
+  height: auto;
   border-top: 5px solid white;
   display: grid;
   grid-template-columns: 80% 20%;
@@ -72,14 +70,15 @@
 .textChatArea {
   grid-column: 1;
   border: none;
-  border-bottom: 2px solid white;
+  border-bottom: 3px solid white;
   background: none;
   font-family: "Roboto", sans-serif;
   color: #ffffff;
-  font-size: 15px;
+  font-size: 20px;
   margin-left: 10px;
   width: 80%;
   margin-right: auto;
+  margin-bottom: 5px;
 }
 
 .textChatArea:focus {
@@ -90,7 +89,7 @@
   border: none;
   grid-column: 2;
   width: 100%;
-  height: 130%;
+  height: 100%;
   margin: 0;
   background-size: 10px 10px;
   background-position: center;
@@ -105,10 +104,59 @@
   outline: none;
 }
 
-
 .sendImg {
   width: 35px;
   filter: invert(26%) sepia(88%) saturate(5620%) hue-rotate(251deg) brightness(100%) contrast(102%);
+}
+
+.msgsArea {
+  grid-row: 1;
+  padding: 5px;
+  overflow-y: scroll;
+}
+
+.msgBackground {
+  width: 85%;
+  border: 3px solid white;
+  padding: 8px;
+  margin: 5px 5px auto auto;
+  height: 70px;
+  border-radius: 10px;
+  display: grid;
+  grid-template-rows: 28px;
+}
+
+.msgsArea::-webkit-scrollbar-track {
+  border: none;
+  padding: 2px 0;
+  background-color: none;
+  width: 1px;
+}
+
+.msgsArea::-webkit-scrollbar {
+  width: 10px;
+}
+
+.msgsArea::-webkit-scrollbar-thumb {
+  border-radius: 15px;
+  background-color: #ffffff;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.msgUsername {
+  font-family: "Roboto", sans-serif;
+  color: #ffffff;
+}
+
+.msgParagraph {
+  font-family: "Roboto", sans-serif;
+  color: #ffffff;
+  font-size: 14px;
+  margin-block-start: 0px;
+  margin-block-end: 0px;
+
+
 }
 
 .pieceDown1 {
@@ -130,12 +178,13 @@
   margin-bottom: 32px;
 }
 
-.gameBoard, .pieceArrGrid{
+.gameBoard,
+.pieceArrGrid {
   grid-column: 1;
   grid-row: 2;
 }
 
-.hoverButton{
+.hoverButton {
   height: 398px;
   width: 100%;
   outline: none;
@@ -151,13 +200,13 @@
   display: block;
 }
 
-.piecesBoardSeperator{
+.piecesBoardSeperator {
   display: grid;
   grid-template-rows: 70px 430px;
   place-items: center;
 }
 
-.piecesHolder{
+.piecesHolder {
   display: grid;
   grid-template-columns: repeat(7, calc(100% / 7));
   grid-column: 1;
@@ -165,97 +214,157 @@
   height: 64px;
 }
 
-.pieceDown1{
+.pieceDown1 {
   animation: pieceDown1 0.2s linear 0s 1 normal forwards;
   z-index: 0;
 }
 
-@keyframes pieceDown1 { 
-  0% {transform: translateY(0)}
-  50% {transform: translateY(calc(calc(boardHeight - calc( 5 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  60% {transform: translateY(calc(calc(boardHeight - calc( 5 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.02) ));}
-  80% {transform: translateY(calc(calc(boardHeight - calc( 5 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  90% {transform: translateY(calc(calc(boardHeight - calc( 5 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.01) ));}
-  100% {transform: translateY(calc(calc(boardHeight - calc( 5 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-
-} 
+@keyframes pieceDown1 {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(calc(calc(boardHeight - calc(5 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  60% {
+    transform: translateY(calc(calc(boardHeight - calc(5 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.02)));
+  }
+  80% {
+    transform: translateY(calc(calc(boardHeight - calc(5 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  90% {
+    transform: translateY(calc(calc(boardHeight - calc(5 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.01)));
+  }
+  100% {
+    transform: translateY(calc(calc(boardHeight - calc(5 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+}
 
 .pieceDown2 {
   animation: pieceDown2 0.2s linear 0s 1 normal forwards;
   z-index: 0;
-
 }
 
-@keyframes pieceDown2 { 
-  0% {transform: translateY(0)}
-  50% {transform: translateY(calc(calc(boardHeight - calc( 4 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  60% {transform: translateY(calc(calc(boardHeight - calc( 4 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.15) ));}
-  80% {transform: translateY(calc(calc(boardHeight - calc( 4 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  90% {transform: translateY(calc(calc(boardHeight - calc( 4 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.07) ));}
-  100% {transform: translateY(calc(calc(boardHeight - calc( 4 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-
-} 
+@keyframes pieceDown2 {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(calc(calc(boardHeight - calc(4 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  60% {
+    transform: translateY(calc(calc(boardHeight - calc(4 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.15)));
+  }
+  80% {
+    transform: translateY(calc(calc(boardHeight - calc(4 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  90% {
+    transform: translateY(calc(calc(boardHeight - calc(4 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.07)));
+  }
+  100% {
+    transform: translateY(calc(calc(boardHeight - calc(4 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+}
 .pieceDown3 {
   animation: pieceDown3 0.2s linear 0s 1 normal forwards;
   z-index: 0;
-
 }
 
-@keyframes pieceDown3 { 
-  0% {transform: translateY(0)}
-  50% {transform: translateY(calc(calc(boardHeight - calc( 3 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  60% {transform: translateY(calc(calc(boardHeight - calc( 3 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.15) ));}
-  80% {transform: translateY(calc(calc(boardHeight - calc( 3 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  90% {transform: translateY(calc(calc(boardHeight - calc( 3 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.07) ));}
-  100% {transform: translateY(calc(calc(boardHeight - calc( 3 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-
-} 
+@keyframes pieceDown3 {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(calc(calc(boardHeight - calc(3 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  60% {
+    transform: translateY(calc(calc(boardHeight - calc(3 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.15)));
+  }
+  80% {
+    transform: translateY(calc(calc(boardHeight - calc(3 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  90% {
+    transform: translateY(calc(calc(boardHeight - calc(3 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.07)));
+  }
+  100% {
+    transform: translateY(calc(calc(boardHeight - calc(3 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+}
 
 .pieceDown4 {
   animation: pieceDown4 0.2s linear 0s 1 normal forwards;
   z-index: 0;
 }
 
-@keyframes pieceDown4 { 
-  0% {transform: translateY(0)}
-  50% {transform: translateY(calc(calc(boardHeight - calc( 2 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  60% {transform: translateY(calc(calc(boardHeight - calc( 2 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.15) ));}
-  80% {transform: translateY(calc(calc(boardHeight - calc( 2 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  90% {transform: translateY(calc(calc(boardHeight - calc( 2 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.07) ));}
-  100% {transform: translateY(calc(calc(boardHeight - calc( 2 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-
-} 
+@keyframes pieceDown4 {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(calc(calc(boardHeight - calc(2 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  60% {
+    transform: translateY(calc(calc(boardHeight - calc(2 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.15)));
+  }
+  80% {
+    transform: translateY(calc(calc(boardHeight - calc(2 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  90% {
+    transform: translateY(calc(calc(boardHeight - calc(2 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.07)));
+  }
+  100% {
+    transform: translateY(calc(calc(boardHeight - calc(2 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+}
 
 .pieceDown5 {
   animation: pieceDown5 0.2s linear 0s 1 normal forwards;
   z-index: 0;
 }
 
-@keyframes pieceDown5 { 
-  0% {transform: translateY(0)}
-  50% {transform: translateY(calc(calc(boardHeight - calc( 1 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  60% {transform: translateY(calc(calc(boardHeight - calc( 1 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.15) ));}
-  80% {transform: translateY(calc(calc(boardHeight - calc( 1 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  90% {transform: translateY(calc(calc(boardHeight - calc( 1 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.07) ));}
-  100% {transform: translateY(calc(calc(boardHeight - calc( 1 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
+@keyframes pieceDown5 {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(calc(calc(boardHeight - calc(1 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  60% {
+    transform: translateY(calc(calc(boardHeight - calc(1 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.15)));
+  }
+  80% {
+    transform: translateY(calc(calc(boardHeight - calc(1 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  90% {
+    transform: translateY(calc(calc(boardHeight - calc(1 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.07)));
+  }
+  100% {
+    transform: translateY(calc(calc(boardHeight - calc(1 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+}
 
-} 
-
-.pieceDown6{
+.pieceDown6 {
   animation: pieceDown6 0.2s linear 0s 1 normal forwards;
   z-index: 0;
 }
 
-@keyframes pieceDown6 { 
-  0% {transform: translateY(0)}
-  50% {transform: translateY(calc(calc(boardHeight - calc( 0 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  60% {transform: translateY(calc(calc(boardHeight - calc( 0 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.15) ));}
-  80% {transform: translateY(calc(calc(boardHeight - calc( 0 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-  90% {transform: translateY(calc(calc(boardHeight - calc( 0 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.07) ));}
-  100% {transform: translateY(calc(calc(boardHeight - calc( 0 * 66px)) - calc(calc(boardHeight - calc( 0 * 66px)) * 0.00) ));}
-} 
-
-
-
-
-
+@keyframes pieceDown6 {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(calc(calc(boardHeight - calc(0 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  60% {
+    transform: translateY(calc(calc(boardHeight - calc(0 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.15)));
+  }
+  80% {
+    transform: translateY(calc(calc(boardHeight - calc(0 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+  90% {
+    transform: translateY(calc(calc(boardHeight - calc(0 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0.07)));
+  }
+  100% {
+    transform: translateY(calc(calc(boardHeight - calc(0 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
+  }
+}
