@@ -13,6 +13,7 @@ import { buildSchema } from "type-graphql";
 import { User } from "./entites/User";
 import { Socket, Server } from "socket.io";
 import { createServer } from "http";
+import { RedisPubSub } from "graphql-redis-subscriptions";
 
 const PORT = 4000;
 
@@ -41,31 +42,58 @@ const main = async () => {
 
   app.use(cors(corsOptions));
 
-  app.use(
-    session({
-      name: "connect4c",
-      store: new RedisStore({
-        client: redis,
-        disableTouch: true,
-      }),
-      cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 365,
-        httpOnly: true,
-        sameSite: "lax",
-        secure: false,
-      },
-      saveUninitialized: false,
-      secret: "newSecret",
-      resave: false,
-    })
-  );
+  const sessionMiddleWare = session({
+    name: "connect4c",
+    store: new RedisStore({
+      client: redis,
+      disableTouch: true,
+    }),
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 365,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+    },
+    saveUninitialized: false,
+    secret: "newSecret",
+    resave: false,
+  });
+
+  app.use(sessionMiddleWare);
+
+  const REDIS_DOMAIN_NAME = "127.0.0.1";
+  const PORT_NUMBER = 6379;
+
+  const options = {
+    host: REDIS_DOMAIN_NAME,
+    port: PORT_NUMBER,
+    retryStrategy: (times: number) => {
+      // reconnect after
+      return Math.min(times * 50, 2000);
+    },
+  };
+
+  const myPubSub = new RedisPubSub({
+    publisher: new Redis(options),
+    subscriber: new Redis(options),
+  });
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [gameResolver],
+      pubSub: myPubSub,
       validate: false,
     }),
-    context: ({ req, res }) => ({ req, res, redis }),
+    subscriptions: {
+      onConnect: async (_, ws: any, __) => {
+        return new Promise((res) => {
+          sessionMiddleWare(ws.upgradeReq, {} as any, () => {
+            res({req: ws.upgradeReq.session.userId});
+          });
+        });
+      },
+    },
+    context: ({ req, res, connection }) => ({ req, res, redis, connection }),
   });
 
   apolloServer.applyMiddleware({
@@ -75,31 +103,16 @@ const main = async () => {
 
   const http = createServer(app);
 
+  apolloServer.installSubscriptionHandlers(http);
+
   const io = new Server(http, {
-    cors: corsOptions
+    cors: corsOptions,
   });
 
   io.on("connection", (socket: Socket) => {
-    socket.on("joinRoom", ({ nickname, roomId }: JoinRoomType) => {
-      console.log(`${nickname} Joined Room ${roomId}!`);
-      socket.join(roomId);
-      socket.broadcast.to(roomId).emit("someoneJoinedRoom");
-    });
-
-    socket.on("completedMove", ({ roomId, id }) => {
-      console.log("recieved req");
-      socket.broadcast.to(roomId).emit("moveCompleted", { id });
-    });
-
     socket.on("sendChatMsg", ({ roomId, id, msg }) => {
       console.log(id, msg);
       socket.to(roomId).emit("chatMsg", { id, msg });
-    });
-
-    socket.on("dasdasdasdas", () => socket.emit("connection debug"));
-
-    socket.on("disconnect", (reason) => {
-      console.log("disconnect for: ",  reason)
     });
   });
 

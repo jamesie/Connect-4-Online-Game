@@ -1,14 +1,25 @@
 import { Game } from "../entites/Game";
-import { Arg, Ctx, Int, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
+import {
+  Arg,
+  Args,
+  Ctx,
+  Int,
+  Mutation,
+  PubSub,
+  PubSubEngine,
+  Query,
+  Resolver,
+  Root,
+  Subscription,
+  UseMiddleware,
+} from "type-graphql";
 import { User } from "../entites/User";
 import { MyContext } from "../types";
 import { getMongoRepository } from "typeorm";
 import { ObjectId } from "mongodb";
 import { isAuth } from "../utils/isAuth";
-import dotenv from "dotenv";
-import fetch from "node-fetch";
-import { isCompositeType } from "graphql";
-dotenv.config();
+
+const GAME_INFO = "GAME_BOARD";
 
 @Resolver()
 export class gameResolver {
@@ -51,8 +62,12 @@ export class gameResolver {
 
   @Mutation(() => Game, { nullable: true })
   @UseMiddleware(isAuth)
-  //@ts-ignore
-  async createGame(@Ctx() { req }: MyContext, @Arg("googleCaptchaToken") captchaToken: string): Promise<Game | null> {
+  async createGame(
+    @Ctx() { req }: MyContext,
+    //@ts-ignore
+    @Arg("googleCaptchaToken") captchaToken: string,
+    @PubSub() pubsub: PubSubEngine
+  ): Promise<Game | null> {
     // const secret = process.env.RECAPTCHA_SECRET_KEY;
 
     // const grc = await fetch(
@@ -66,7 +81,7 @@ export class gameResolver {
     //   throw new Error("Beep boop ;)");
     // }
 
-    const game = new Game();
+    let game = new Game();
     // GameBoard: 0 means empty, 1 means player1/creator, 2 means joiner of game
     game.gameBoard = [
       [0, 0, 0, 0, 0, 0, 0],
@@ -89,17 +104,24 @@ export class gameResolver {
     game.moveNum = 0;
 
     try {
-      await getMongoRepository(Game).save(game);
+      game = await getMongoRepository(Game).save(game);
     } catch (err) {
       throw new Error(err as string);
     }
+
+    const payload = game;
+    await pubsub.publish(String(game._id), payload);
 
     return game;
   }
 
   @Mutation(() => Game, { nullable: true })
   @UseMiddleware(isAuth)
-  async joinGame(@Ctx() { req }: MyContext, @Arg("gameId") gameId: string): Promise<Game | null> {
+  async joinGame(
+    @Ctx() { req }: MyContext,
+    @Arg("gameId") gameId: string,
+    @PubSub() pubsub: PubSubEngine
+  ): Promise<Game | null> {
     const _id: ObjectId = new ObjectId(gameId);
 
     const game = await getMongoRepository(Game).findOne({ where: { _id } });
@@ -128,6 +150,9 @@ export class gameResolver {
     game.user2Id = joiningUserId;
 
     await getMongoRepository(Game).updateOne({ _id }, { $set: { user2: joiningUser, user2Id: joiningUserId } });
+
+    const payload = game;
+    await pubsub.publish(String(gameId), payload);
 
     return game;
   }
@@ -158,12 +183,18 @@ export class gameResolver {
     return game;
   }
 
+  @Subscription(() => Game, { topics: (payload) => payload.args.gameId })
+  async gameSubscription(@Root() payLoad: any, @Arg("gameId") _: string): Promise<Game | null> {
+    return payLoad;
+  }
+
   @Mutation(() => Game)
   @UseMiddleware(isAuth)
   async movePiece(
     @Arg("gameId") gameId: string,
     @Arg("gameBoard", () => [[Int]]) proposedGameBoard: number[][],
-    @Ctx() { req }: MyContext
+    @Ctx() { req }: MyContext,
+    @PubSub() pubsub: PubSubEngine
   ): Promise<Game | null> {
     if (proposedGameBoard.length !== 6 /* row check*/ || proposedGameBoard[0].length !== 7 /* column check*/) {
       throw new Error("GameBoard malformed :yikes:");
@@ -191,7 +222,6 @@ export class gameResolver {
 
     const refereeResponse = referee(game.gameBoard, proposedGameBoard, req.session.userId == game.user1Id ? 1 : 2);
 
-    console.log("here2");
     if (refereeResponse === 0) {
       throw new Error("Illegal Move Homie");
     }
@@ -210,7 +240,6 @@ export class gameResolver {
       );
     }
 
-    //  console.log("not illegal")
 
     await getMongoRepository(Game).updateOne(
       { _id },
@@ -221,6 +250,9 @@ export class gameResolver {
         },
       }
     );
+
+    const payload = game;
+    await pubsub.publish(String(gameId), payload);
 
     return game;
   }
@@ -251,7 +283,6 @@ const referee = (curr: number[][], proposed: number[][], userColor: number): num
   const y: number = differences[0][0];
   const x: number = differences[0][1];
 
-  // console.log("y: ", y, "x: ", x);
 
   if (curr[y][x] !== 0) {
     //move is replacing a piece / illegal move
@@ -304,7 +335,6 @@ const hasWon = (board: number[][], userColor: number): boolean => {
           }
         }
 
-
         //right
         if (i + 3 < HEIGHT) {
           for (let k = 0; k < 4; k++) {
@@ -318,21 +348,16 @@ const hasWon = (board: number[][], userColor: number): boolean => {
         //upleft
         if (j + 3 < WIDTH && i + 3 < HEIGHT) {
           for (let k = 0; k < 4; k++) {
-            console.log(k)
             if (board[i + k][j + k] !== userColor) {
               break;
             }
-            console.log(k)
             counter3++;
           }
-        } 
-
+        }
 
         //upright
         if (i - 3 > 0 && j + 3 < WIDTH) {
-          
           for (let k = 0; k < 4; k++) {
-            console.log(i , j , i + k, j + k)
             if (board[i - k][j + k] !== userColor) {
               break;
             }
