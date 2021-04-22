@@ -3,17 +3,18 @@ import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import SidePanelUI from "../../components/SidePanelUI";
-import {
-  useFetchGameInfosLazyQuery,
-  useMeQuery,
-  useMovePieceMutation
-} from "../../types";
+import { useFetchGameInfosLazyQuery, useMeQuery, useMovePieceMutation } from "../../types";
 import { doArrsMatch } from "../../utils/doArrsMatch";
 import { findDifference } from "../../utils/FindDifference";
 import { sleep } from "../../utils/sleep";
 import stylesI from "../index.module.css";
 import styles from "./gamePage.module.css";
+import { Textfit } from "react-textfit";
 
+type msgType = {
+  username: string;
+  message: string;
+};
 
 const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   const router = useRouter();
@@ -38,48 +39,80 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   const [playerNumber, setPlayerNumber] = useState<number>(0);
   const [moveMutation, moveMutationRes] = useMovePieceMutation();
   const [sidePanelUIMsg, setSidePanelUIMsg] = useState<string>("loading...");
-  const [hasSocketBeenEmitted, setHasSocketBeenEmitted] = useState<boolean>(false)
+  const [hasSocketBeenEmitted, setHasSocketBeenEmitted] = useState<boolean>(false);
+  const [chatMsgs, setChatMsgs] = useState<msgType[]>([]);
   const meInfo = useMeQuery();
   const gameInfoRef = useRef(gameInfo);
   const meInfoRef = useRef(meInfo);
+  const [msgsJsx, setMsgsJsx] = useState([]);
 
-  const socket = io("http://localhost:4000/", {
-    timeout: 2000,
-    transports: ['websocket']
-    
-
+  const socket = io("http://localhost:4000", {
+    timeout: 10000,
   });
+
+  if (socket.disconnected) {
+    console.log("disconnected")
+  }
 
   if (meInfo.data?.me && !hasSocketBeenEmitted) {
     socket.emit("joinRoom", { nickname: meInfo.data.me.nickname, roomId: gameId });
-    setHasSocketBeenEmitted(true)
+    setHasSocketBeenEmitted(true);
   }
 
+  socket.on("connection debug", () => {
+    console.log("recieved connection debug");
+  });
 
-  socket.on("moveCompleted", async () => {
+  socket.on("moveCompleted", (res) => {
+    if (res.id === meInfo?.data?.me?._id) return;
+    console.log("not my data");
     console.log("recieved move completion");
     const previousBoard = board;
-    const a = await gameInfo.refetch({
+    gameInfo.refetch({
       gameId: String(gameId),
     });
   });
 
-  socket.on("someoneJoinedRoom", async () => {
-    const a = await gameInfo.refetch({
+  socket.on("someoneJoinedRoom", () => {
+    gameInfo.refetch({
       gameId: String(gameId),
     });
+  });
 
-  })
+  socket.on("chatMsg", (msg) => {
+    const resGameData = gameInfoRef.current?.data?.fetchGameInfos;
+    if (!resGameData?.user2?._id) {
+      return;
+    }
+    const currMsgArrState = chatMsgs;
+    currMsgArrState.push({
+      username: msg.username === resGameData.user2._id ? resGameData.user2.nickname : resGameData.user1.nickname,
+      message: msg.msg,
+    });
+    setChatMsgs(currMsgArrState);
+    setMsgsJsx(
+      chatMsgs.map((msgContent, index) => {
+        return (
+          <div className={styles.msgBackground} key={`messageNo.${index}`}>
+            <Textfit className={styles.msgUsername} style={{ height: "80%", width: "80%" }}>
+              {msgContent.username}
+            </Textfit>
+            <p className={styles.msgParagraph}>{msgContent.message}</p>
+          </div>
+        );
+      })
+    );
+  });
 
   const makePlayerMove = async () => {
-    
     try {
-      const res = await moveMutation({ variables: { gameBoard: board, gameId } })
-      socket.emit("completedMove", { roomId: gameId });
-      console.log("res", res)
+      await moveMutation({ variables: { gameBoard: board, gameId } });
+      console.log("completed mutation");
     } catch (err) {
       console.log(err);
-      
+      await gameInfo.refetch({
+        gameId: String(gameId),
+      });
     }
   };
 
@@ -101,10 +134,11 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
             }}
             onClick={async () => {
               if (!isUserMove) return;
+              setIsUserMove(false);
               await updateFallingArr(i, playerColor, playerNumber, false);
-              handleFallenPieces(board)
-              setFallingPieceArr([<></>])
-              setIsUserMove(false)
+              handleFallenPieces(board);
+              setFallingPieceArr([<></>]);
+              setIsUserMove(false);
             }}
           />
         </>
@@ -238,7 +272,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
 
     const newRow = board[row].map((item, index) => {
       if (index === column) {
-        return color === 'red' ? 1 : 2;
+        return color === "red" ? 1 : 2;
       } else {
         return item;
       }
@@ -253,7 +287,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   };
 
   const findStyle = (row: number) => {
-    console.log(row + 1)
+    console.log(row + 1);
     switch (row + 1) {
       case 1:
         return styles.pieceDown1;
@@ -270,20 +304,20 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     }
   };
 
-  const updateFallingArr = async (i: number, colorStr: string, playerColor: number ,recieved: boolean) => {
+  const updateFallingArr = async (i: number, colorStr: string, playerColor: number, recieved: boolean) => {
     const newFArr = fallingArr;
     newFArr[i] = playerNumber;
     setFallingArr(newFArr);
     handlePieceFallingArr(colorStr);
     await sleep(700);
-    if (!recieved){
+    if (!recieved) {
       await makePlayerMove();
+      socket.emit("completedMove", { roomId: gameId, id: meInfo?.data?.me?._id });
     } else {
-      setFallingPieceArr([<></>])
+      setFallingPieceArr([<></>]);
     }
     setFallingArr([0, 0, 0, 0, 0, 0, 0]);
     setHoverArr([0, 0, 0, 0, 0, 0, 0]);
-  
   };
 
   //TODO: MOVE pieces TO OWN COMPONENET
@@ -299,6 +333,9 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
 
   useEffect(() => {
     if (!gameInfo.data?.fetchGameInfos) {
+      return;
+    }
+    if (!meInfo.data) {
       if (!gameInfo.loading && gameInfo.called) {
         //If we cant find a game for this ID we've assumed theyve incorrectly typed in the game id so we can send them back to homepage
         //we could possibly make this display a game not found error
@@ -306,16 +343,23 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
       }
       return;
     }
-    if (!meInfo.data) {
-      return;
+    if (
+      gameInfo.data.fetchGameInfos.user1?._id !== meInfo.data.me._id &&
+      gameInfo.data.fetchGameInfos.user2?._id !== meInfo.data.me._id
+    ) {
+      //If we cant find a game for this ID we've assumed theyve incorrectly typed in the game id so we can send them back to homepage
+      //we could possibly make this display a game not found error
+      router.push("/");
     }
+
     const resGameData = gameInfo.data.fetchGameInfos;
     const resMeData = meInfo.data.me;
-    gameInfoRef.current = gameInfo
-    meInfoRef.current = meInfo
+    gameInfoRef.current = gameInfo;
+    meInfoRef.current = meInfo;
 
     if (!doArrsMatch(resGameData.gameBoard, board)) {
-      const updateBoard = async() => {
+      setIsUserMove(false);
+      const updateBoard = async () => {
         const oldBoard = board;
 
         const newBoard = resGameData.gameBoard.map((item) => {
@@ -323,20 +367,21 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
         });
         const difference = findDifference(newBoard, oldBoard);
 
-        await updateFallingArr(difference[1], playerColor === "red" ? "yellow" : "red", playerNumber === 1 ? 2 : 1, true)
-
+        await updateFallingArr(
+          difference[1],
+          playerColor === "red" ? "yellow" : "red",
+          playerNumber === 1 ? 2 : 1,
+          true
+        );
         setBoard(newBoard);
-        handleFallenPieces(newBoard)
-
-      }
+        handleFallenPieces(newBoard);
+      };
       updateBoard();
-      
     }
 
     if (resGameData.user2?.nickname !== opponentName && resGameData.user2) {
       setOpponentName(resGameData.user2.nickname);
     }
-   
 
     if (resGameData.whoseMove === resMeData._id) {
       setIsUserMove(true);
@@ -345,7 +390,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     }
 
     if (resGameData.whoWon) {
-      setIsUserMove(false)
+      setIsUserMove(false);
     }
 
     if (resMeData._id === resGameData.user1._id) {
@@ -355,33 +400,36 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
       setPlayerColor("yellow");
       setPlayerNumber(2);
     }
-
   }, [gameInfo.data]);
 
   return (
-    
-      <div className={stylesI.gradientBG}>
-        <div className={styles.wholeCenterWrapper}>
-          <div className={styles.boardGrid}>
-            <div style={{ gridColumn: 3 }} className={styles.boardUIWrapper}>
-              <div className={styles.piecesBoardSeperator}>
-                <div className={styles.piecesHolder}>
-                  {fallingPieceArr}
-                  {hoverPieces}
-                </div>
-                <button onClick={() => socket.emit("aaa")}>dddddddddddddd</button>
-
-                <img src='../../../static/board.svg' alt='msgSendIco' className={styles.gameBoard} />
-                <div className={styles.pieceArrGrid}>
-                  {hoverButtons()} {fallenPieces}
-                </div>
+    <div className={stylesI.gradientBG}>
+      <div className={styles.wholeCenterWrapper}>
+        <div className={styles.boardGrid}>
+          <div style={{ gridColumn: 3 }} className={styles.boardUIWrapper}>
+            <div className={styles.piecesBoardSeperator}>
+              <div className={styles.piecesHolder}>
+                {fallingPieceArr}
+                {hoverPieces}
+              </div>
+              <img src='../../../static/board.svg' alt='msgSendIco' className={styles.gameBoard} />
+              <div className={styles.pieceArrGrid}>
+                {hoverButtons()} {fallenPieces}
               </div>
             </div>
-            <SidePanelUI board={board} gameInfo={gameInfoRef.current} meInfo={meInfoRef.current} isUserMove={isUserMove} gameId={gameId} />
           </div>
+          <SidePanelUI
+            board={board}
+            gameInfo={gameInfoRef.current}
+            meInfo={meInfoRef.current}
+            isUserMove={isUserMove}
+            gameId={gameId}
+            socket={socket}
+            msgsJsx={msgsJsx}
+          />
         </div>
       </div>
-  
+    </div>
   );
 };
 
