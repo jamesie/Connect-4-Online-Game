@@ -11,7 +11,8 @@ import { ApolloServer } from "apollo-server-express";
 import { gameResolver } from "./resolvers/gameResolver";
 import { buildSchema } from "type-graphql";
 import { User } from "./entites/User";
-import { Server, Socket } from "socket.io";
+import { Socket, Server } from "socket.io";
+import { createServer } from "http";
 
 const PORT = 4000;
 
@@ -72,12 +73,10 @@ const main = async () => {
     cors: false,
   });
 
-  const http = app.listen(PORT, () => {
-    console.log(`server started on port: ${PORT}`);
-  });
+  const http = createServer(app);
 
   const io = new Server(http, {
-    cors: corsOptions,
+    origins: ["http://localhost:3000"]
   });
 
   io.on("connection", (socket: Socket) => {
@@ -87,15 +86,31 @@ const main = async () => {
       socket.broadcast.to(roomId).emit("someoneJoinedRoom");
     });
 
-    socket.on("completedMove", ({ roomId }) => {
-      socket.broadcast.to(roomId).emit("moveCompleted");
+    socket.on("completedMove", ({ roomId, id }) => {
+      console.log("recieved req");
+      socket.broadcast.to(roomId).emit("moveCompleted", { id });
+    });
+
+    socket.on("sendChatMsg", ({ roomId, id, msg }) => {
+      console.log(id, msg);
+      socket.to(roomId).emit("chatMsg", { id, msg });
+    });
+
+    socket.on("dasdasdasdas", () => socket.emit("connection debug"));
+
+    socket.on("disconnect", (reason) => {
+      console.log("disconnect for: ",  reason)
     });
   });
 
-  type JoinRoomType = {
-    nickname: string;
-    roomId: string;
-  };
+  http.listen(PORT, () => {
+    console.log(`server started on port: ${PORT}`);
+  });
 };
 
 main().catch((err) => console.log(err));
+
+type JoinRoomType = {
+  nickname: string;
+  roomId: string;
+};
