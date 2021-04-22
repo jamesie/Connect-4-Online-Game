@@ -86,3 +86,4 @@ front-end/.env.local
 back-end/yarn.lock
 *.lock
 front-end/yarn.lock
+back-end/yarn.lock
