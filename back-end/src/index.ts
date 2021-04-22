@@ -76,7 +76,7 @@ const main = async () => {
   const http = createServer(app);
 
   const io = new Server(http, {
-    origins: ["http://localhost:3000"]
+    cors: corsOptions
   });
 
   io.on("connection", (socket: Socket) => {
