@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
-@value boardHeight: 398px;
+@value boardHeight: 400px;
+@value boardWidth: 500px;
 
 /* ________________DOESNT MATTER_________________*/
 
@@ -15,7 +16,7 @@
 
 .boardGrid {
   display: grid;
-  grid-template-columns: 200px 5% 600px 5% 400px;
+  grid-template-columns: 0px 5% 600px 5% 400px 5%;
   width: auto;
   height: auto;
   place-items: center;
@@ -24,13 +25,14 @@
 }
 
 .boardUIWrapper {
-  width: 600px;
-  height: 600px;
+  width: calc(boardWidth * 1.2);
+  height: calc(boardHeight * 1.5);
   background: rgb(255, 255, 255);
   border-radius: 2px;
   padding: 15px;
   display: grid;
   place-items: center;
+  grid-column: 3;
 }
 
 .sideUIWrapper {
@@ -43,6 +45,7 @@
   grid-template-rows: 50% 50%;
   place-items: center;
   margin: auto auto;
+  grid-column: 5;
 }
 
 .textChatWrapper {
@@ -165,17 +168,17 @@
 }
 
 .gameBoard {
-  width: 500px;
+  width: boardWidth;
   z-index: 2;
 }
 
 .pieceArrGrid {
-  width: 464px;
-  height: 398px;
+  width: calc(boardWidth* 0.928);
+  height: boardHeight;
   display: grid;
   grid-template-columns: repeat(7, calc(100% / 7));
   grid-template-rows: repeat(6, calc(100% / 6));
-  margin-bottom: 32px;
+  margin-bottom: calc(boardHeight * 0.08)
 }
 
 .gameBoard,
@@ -185,7 +188,7 @@
 }
 
 .hoverButton {
-  height: 398px;
+  height: boardHeight;
   width: 100%;
   outline: none;
   border: none;
@@ -201,8 +204,10 @@
 }
 
 .piecesBoardSeperator {
+  width: boardWidth;
+  height: calc(boardHeight + calc(boardHeight * 0.16));
   display: grid;
-  grid-template-rows: 70px 430px;
+  grid-template-rows: calc(boardHeight * 0.165) calc(boardHeight * 1.075);
   place-items: center;
 }
 
@@ -210,8 +215,8 @@
   display: grid;
   grid-template-columns: repeat(7, calc(100% / 7));
   grid-column: 1;
-  width: 464px;
-  height: 64px;
+  width: calc(boardWidth * 0.928);
+  height: calc(boardHeight * 0.16);
 }
 
 .pieceDown1 {
@@ -367,4 +372,24 @@
   100% {
     transform: translateY(calc(calc(boardHeight - calc(0 * 66px)) - calc(calc(boardHeight - calc(0 * 66px)) * 0)));
   }
+}
+
+@media (max-width:1024px){
+  .boardGrid {
+    display: grid;
+    grid-template-columns: 95% 5%;
+    grid-template-rows:0% 600px 5%;
+    overflow-y: scroll;
+  }
+
+  .boardUIWrapper {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
+  .sideUIWrapper{
+    grid-row: 4;
+    grid-column: 1;
+  }
+
 }

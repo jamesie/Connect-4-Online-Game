@@ -375,7 +375,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     <div className={stylesI.gradientBG}>
       <div className={styles.wholeCenterWrapper}>
         <div className={styles.boardGrid}>
-          <div style={{ gridColumn: 3 }} className={styles.boardUIWrapper}>
+          <div className={styles.boardUIWrapper}>
             <div className={styles.piecesBoardSeperator}>
               <div className={styles.piecesHolder}>
                 {fallingPiecesJSX}

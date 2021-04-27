@@ -113,7 +113,7 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ board, gameInfo, meInfo, isUs
   let a = [<></>];
 
   return (
-    <div style={{ gridColumn: 5, display: "grid" }} className={styles.sideUIWrapper}>
+    <div style={{ display: "grid" }} className={styles.sideUIWrapper}>
       <div style={{ gridRow: 1, display: "grid", placeItems: "center" }} className={styles.playerUIWrapper}>
         {whosMoveJSX}
       </div>
