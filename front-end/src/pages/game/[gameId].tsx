@@ -388,22 +388,6 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
             </div>
           </div>
           <SidePanelUI board={board} gameInfo={gameInfo} meInfo={meInfo} isUserMove={isUserMove} gameId={gameId} />
-          <button
-            onClick={() => {
-              console.log(board);
-            }}
-          >
-            debugging button
-          </button>
-          <button
-            onClick={() => {
-              for (let fallingPiece of fallingPiecesJSX) {
-                console.log(fallingPiece.key);
-              }
-            }}
-          >
-            debugging button 2
-          </button>
         </div>
       </div>
     </div>
