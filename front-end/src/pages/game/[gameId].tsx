@@ -20,6 +20,7 @@ import stylesI from "../index.module.css";
 import styles from "./gamePage.module.css";
 import { Textfit } from "react-textfit";
 import { useMessagesSubscriptionSubscription } from "../../types";
+import { red } from "@material-ui/core/colors";
 
 type msgType = {
   username: string;
@@ -41,8 +42,9 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   const router = useRouter();
   const [isUserMove, setIsUserMove] = useState<boolean>(false);
   const [hoverArr, setHoverArr] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
-  const [fallingArr, setFallingArr] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
-  const [fallingPieceArr, setFallingPieceArr] = useState<JSX.Element[]>([<></>]);
+  const [fallingPiecesJSX, setFallingPiecesJSX] = useState<JSX.Element[]>([
+    <></>,
+  ]);
   const [hoverPieces, setHoverPieces] = useState<JSX.Element[]>([<></>]);
   const [fallenPieces, setFallenPieces] = useState<JSX.Element[]>([<></>]);
   const [board, setBoard] = useState<number[][]>([
@@ -75,9 +77,9 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   const [gameInfo, setGameInfo] = useState<gameRes>();
   const meInfo = useMeQuery();
 
-  const makePlayerMove = async () => {
+  const makePlayerMove = async (proposedBoard: number[][]) => {
     try {
-      await moveMutation({ variables: { gameBoard: board, gameId } });
+      await moveMutation({ variables: { gameBoard: proposedBoard, gameId } });
       console.log("completed mutation");
     } catch (err) {
       await fetchGameInfosRes.refetch({
@@ -87,7 +89,6 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     }
   };
 
-  //TODO: MOVE hoverButtons TO OWN COMPONENET
   const hoverButtons = () => {
     let jsxArr = [];
     for (let i = 0; i < 7; i++) {
@@ -105,10 +106,38 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
             }}
             onClick={async () => {
               if (!isUserMove) return;
-              setIsUserMove(false);
-              await updateFallingArr(i, playerColor, playerNumber, false);
-              handleFallenPieces(board);
-              setFallingPieceArr([<></>]);
+              let depth = 72;
+              for (let j = 0; j < 6; j++) {
+                //finding depth/y coordinate of move
+                console.log(j, i);
+                if (j === 5) {
+                  depth = j;
+                  break;
+                }
+                if (board[j + 1][i] !== 0) {
+                  depth = j;
+                  break;
+                }
+              }
+              if (depth === 72) return; //there mustnt be an availible move
+
+              const newBoard = board.map((item, index) => {
+                if (index === depth){
+                  return item.map((item2, index2) => {
+                    if (index2 === i) {
+                      return playerNumber
+                    } else {
+                      return item2
+                    }
+                  });
+                } else {
+                  return item
+                }
+              });
+              newBoard[depth][i] = playerNumber;
+              console.log(newBoard);
+              makePlayerMove(newBoard);
+              setHoverArr([0, 0, 0, 0, 0, 0, 0])
             }}
           />
         </>
@@ -172,32 +201,6 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
 
   //TODO: MOVE hoverButtons TO OWN COMPONENET
 
-  const handlePieceFallingArr = (color: string) => {
-    setFallingPieceArr(() => {
-      const addOn = fallingArr.map((item, i) => {
-        if (fallingArr[i] !== 0) {
-          return (
-            <img
-              src={`../../../static/${color}-piece.svg`}
-              alt={`${color}_piece.svg`}
-              onClick={() => {}}
-              style={{
-                gridColumn: i + 1,
-                gridRow: 1,
-              }}
-              key={i + "falling"}
-              className={calculateCSSClass(i, color)}
-            />
-          );
-        } else {
-          return;
-        }
-      });
-
-      return [...addOn, ...fallingPieceArr];
-    });
-  };
-
   //TODO: MOVE pieces TO OWN COMPONENET
 
   useEffect(() => {
@@ -222,73 +225,6 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     );
   }, [hoverArr]);
 
-  const calculateCSSClass = (column: number, color: string) => {
-    if (!userTurn) {
-      return "error";
-    }
-
-    let row = null;
-    for (let i = 0; i < 6; i++) {
-      if (board[i + 1]) {
-        if (board[i + 1][column] !== 0 && board[i][column] === 0) {
-          row = i;
-          break;
-        }
-      } else {
-        row = i;
-        break;
-      }
-    }
-
-    const newRow = board[row].map((item, index) => {
-      if (index === column) {
-        return color === "red" ? 1 : 2;
-      } else {
-        return item;
-      }
-    });
-    const newArr = board;
-
-    newArr[row] = newRow;
-
-    setBoard(newArr);
-
-    return findStyle(row);
-  };
-
-  const findStyle = (row: number) => {
-    console.log(row + 1);
-    switch (row + 1) {
-      case 1:
-        return styles.pieceDown1;
-      case 2:
-        return styles.pieceDown2;
-      case 3:
-        return styles.pieceDown3;
-      case 4:
-        return styles.pieceDown4;
-      case 5:
-        return styles.pieceDown5;
-      case 6:
-        return styles.pieceDown6;
-    }
-  };
-
-  const updateFallingArr = async (i: number, colorStr: string, playerColor: number, recieved: boolean) => {
-    if (!recieved) {
-      await makePlayerMove();
-      return;
-    }
-    const newFArr = fallingArr;
-    newFArr[i] = playerNumber;
-    setFallingArr(newFArr);
-    handlePieceFallingArr(colorStr);
-    await sleep(700);
-    setFallingPieceArr([<></>]);
-    setFallingArr([0, 0, 0, 0, 0, 0, 0]);
-    setHoverArr([0, 0, 0, 0, 0, 0, 0]);
-  };
-
   //TODO: MOVE pieces TO OWN COMPONENET
 
   useEffect(() => {
@@ -307,6 +243,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     if (!meInfo.data) {
       return;
     }
+    console.log("NEW PUBSUB UPDATE")
     gameUpdater(gameSubRes.data.gameSubscription, meInfo.data);
     console.log("updated with this gameSubRes data: ", gameSubRes.data.gameSubscription);
   }, [gameSubRes.data, meInfo.data]);
@@ -336,7 +273,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     console.log("updated with this fetchGameInfos data: ", fetchGameInfosRes.data.fetchGameInfos);
   }, [fetchGameInfosRes.data]);
 
-  const gameUpdater = (gameRes: gameRes, meRes: MeQuery) => {
+  const gameUpdater = async (gameRes: gameRes, meRes: MeQuery, skipAnimation?: boolean) => {
     if (!gameRes) {
       return;
     }
@@ -344,45 +281,33 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
       return;
     }
     if (!doArrsMatch(gameRes.gameBoard, board)) {
-      setIsUserMove(false);
-      console.log("set is not move2");
-      const updateBoard = async () => {
-        const oldBoard = board;
+      const oldBoard = board;
 
-        const newBoard = gameRes.gameBoard.map((item) => {
-          return item;
-        });
-        const difference = findDifference(newBoard, oldBoard);
-        console.log(difference)
-
-        await updateFallingArr(
-          difference[1],
-          playerColor === "red" ? "yellow" : "red",
-          playerNumber === 1 ? 2 : 1,
-          true
-        );
-        setBoard(newBoard);
-        handleFallenPieces(newBoard);
-      };
-      updateBoard();
+      const newBoard = gameRes.gameBoard.map((item) => {
+        return item;
+      });
+      console.log("newBoard" , newBoard)
+      console.log("oldBoard" ,oldBoard)
+      const differences = findDifference(newBoard, oldBoard);
+      console.log("difference", differences);
+      //if (skipAnimation) {
+        await handleDifference(differences);
+      //}
+      setBoard(newBoard);
+      handleFallenPieces(newBoard);
     }
 
     if (gameRes.user2?.nickname !== opponentName && gameRes.user2) {
       setOpponentName(gameRes.user2.nickname);
     }
-    console.log("whose move", gameRes.whoseMove);
-    console.log("me id", meRes.me._id);
-    console.log("are the same", gameRes.whoseMove === meRes.me._id);
+
     if (gameRes.whoseMove === meRes.me._id) {
-      console.log("set is move0");
       setIsUserMove(true);
     } else {
-      console.log("set is not move0");
       setIsUserMove(false);
     }
 
     if (gameRes.whoWon) {
-      console.log("set is not move1");
       setIsUserMove(false);
     }
 
@@ -396,6 +321,56 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     setGameInfo(gameRes);
   };
 
+  const handleDifference = async (differences: number[][]) => {
+    //difference[0] is the row that there is a difference on
+    //difference[1] is the column that there is a difference on
+    //difference[2] is the color that the difference is
+    const oldUserMove = isUserMove;
+    setIsUserMove(false);
+    setFallingPiecesJSX(
+      differences.map((difference, j) => {
+        return (
+          <img
+            src={`../../../static/${difference[2] === 1 ? "red" : "yellow"}-piece.svg`}
+            alt={`${difference[2]}_piece.svg`}
+            onClick={() => {}}
+            style={{
+              gridColumn: difference[1] + 1,
+              gridRow: 1
+            }}
+            key={difference[1] + "falling"}
+            className={findStyle(difference[0])}
+          />
+        );
+      })
+    );
+
+    await sleep(500);
+
+    setFallingPiecesJSX(
+      [<></>]
+    );
+    setIsUserMove(oldUserMove);
+  };
+
+  const findStyle = (row: number) => {
+    console.log(row + 1);
+    switch (row + 1) {
+      case 1:
+        return styles.pieceDown1;
+      case 2:
+        return styles.pieceDown2;
+      case 3:
+        return styles.pieceDown3;
+      case 4:
+        return styles.pieceDown4;
+      case 5:
+        return styles.pieceDown5;
+      case 6:
+        return styles.pieceDown6;
+    }
+  };
+
   return (
     <div className={stylesI.gradientBG}>
       <div className={styles.wholeCenterWrapper}>
@@ -403,7 +378,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
           <div style={{ gridColumn: 3 }} className={styles.boardUIWrapper}>
             <div className={styles.piecesBoardSeperator}>
               <div className={styles.piecesHolder}>
-                {fallingPieceArr}
+                {fallingPiecesJSX}
                 {hoverPieces}
               </div>
               <img src='../../../static/board.svg' alt='msgSendIco' className={styles.gameBoard} />
@@ -422,7 +397,9 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
           </button>
           <button
             onClick={() => {
-              console.log(gameInfo);
+              for (let fallingPiece of fallingPiecesJSX) {
+                console.log(fallingPiece.key);
+              }
             }}
           >
             debugging button 2
