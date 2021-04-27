@@ -21,10 +21,12 @@ export class Messages extends BaseEntity {
   messages!: messageType[];
 
   @Field(() => ID)
-  user1ID!: ObjectId;
+  @Column()
+  user1Id!: ObjectId;
 
   @Field(() => ID, { nullable: true })
-  user2ID: ObjectId | null;
+  @Column()
+  user2Id: ObjectId | null;
 }
 
 

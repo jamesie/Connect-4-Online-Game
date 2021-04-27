@@ -113,7 +113,7 @@ export class gameResolver {
     const messages = await getMongoRepository(Messages).save({
       gameId: game._id,
       messages: [[game.user1.nickname, "has joined the game!"]],
-      user1ID: user1._id,
+      user1Id: user1._id,
     });
     await pubsub.publish(String(messages._id), messages);
 
@@ -167,12 +167,12 @@ export class gameResolver {
       });
       if (messagesEntity) {
         const messages = messagesEntity.messages;
-        messagesEntity.user2ID = joiningUser._id;
+        messagesEntity.user2Id = joiningUser._id;
 
         messages.push([game.user2.nickname, "has joined the game!"]);
         await getMongoRepository(Messages).updateOne(
           { _id: messagesEntity?._id },
-          { $set: { messages, user2: messagesEntity.user2ID } }
+          { $set: { messages, user2Id: messagesEntity.user2Id } }
         );
 
         messagesEntity.messages = messages;

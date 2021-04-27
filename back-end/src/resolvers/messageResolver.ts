@@ -35,27 +35,23 @@ export class messagesResolver {
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async sendMessage(@Arg("messagesId") messagesId: string, @Ctx() { req }: MyContext, @Arg("message") message: string, @PubSub() pubsub: PubSubEngine): Promise<boolean>{
-    if (!message || message.length < 1){
-      return false
-    }
+    if (!message || message.length < 1)return false
+    
     const messagesObj = await getMongoRepository(Messages).findOne({ where: { _id: new ObjectId(messagesId) } })
 
-    if (!messagesObj){
-      return false
-    }
+    if (!messagesObj)return false
+    
     const messagesArr: messageType[] = messagesObj?.messages
 
-    const user = await getMongoRepository(User).findOne({ where: { _id: req.session?.userId } })
+    const userObjID = new ObjectId(req.session?.userId)
 
-    if (!user){
-      return false
-    }
+    const user = await getMongoRepository(User).findOne({ where: { _id: userObjID } })
 
-    console.log("dasdsa", messagesObj)
+    if (!user) return false
 
-    if (user._id !== messagesObj.user1ID || user._id !== messagesObj.user2ID){
-      return false;
-    }
+
+    if (req.session.userId != messagesObj.user1Id && req.session.userId != messagesObj.user2Id) return false;
+    
 
     messagesArr.push([user.nickname, message])
 
