@@ -1,5 +1,5 @@
 import { ApolloError, LazyQueryResult } from "@apollo/client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "../pages/game/gamePage.module.css";
 import {
   MeQueryResult,
@@ -32,6 +32,7 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ board, gameInfo, meInfo, isUs
   );
 
   const [msgInput, setMsgInput] = useState<string>("");
+  const messagesEndRef = useRef(null)
 
   const messagesSubRes = useMessagesSubscriptionSubscription({
     skip: !gameInfo?.messagesId,
@@ -39,6 +40,13 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ board, gameInfo, meInfo, isUs
       messagesId: gameInfo?.messagesId,
     },
   });
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messagesSubRes?.data?.messagesSubscription?.messages]);
 
   const [callSendMessageMutation] = useSendMessageMutation()
 
@@ -124,6 +132,7 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ board, gameInfo, meInfo, isUs
               </>
             );
           })}
+          <div ref={messagesEndRef }/>
         </div>
         <div className={styles.sendWrapper}>
           <input className={styles.textChatArea} value={msgInput} onChange={(e) => setMsgInput(e.target.value)} />
