@@ -1,0 +1,3 @@
+mutation SendMessage($message: String!, $messagesId: String!){
+  sendMessage(message: $message, messagesId: $messagesId)
+}

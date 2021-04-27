@@ -22,6 +22,16 @@ export type Game = {
   moveNum?: Maybe<Scalars['Int']>;
   whoseMove: Scalars['ID'];
   whoWon?: Maybe<Scalars['ID']>;
+  messagesId?: Maybe<Scalars['ID']>;
+};
+
+export type Messages = {
+  __typename?: 'Messages';
+  _id: Scalars['ID'];
+  gameId: Scalars['ID'];
+  messages: Array<Array<Scalars['String']>>;
+  user1ID: Scalars['ID'];
+  user2ID?: Maybe<Scalars['ID']>;
 };
 
 export type Mutation = {
@@ -30,6 +40,7 @@ export type Mutation = {
   createGame?: Maybe<Game>;
   joinGame?: Maybe<Game>;
   movePiece: Game;
+  sendMessage: Scalars['Boolean'];
 };
 
 
@@ -53,16 +64,44 @@ export type MutationMovePieceArgs = {
   gameId: Scalars['String'];
 };
 
+
+export type MutationSendMessageArgs = {
+  message: Scalars['String'];
+  messagesId: Scalars['String'];
+};
+
 export type Query = {
   __typename?: 'Query';
   ping: Scalars['String'];
   me?: Maybe<User>;
   fetchGameInfos?: Maybe<Game>;
+  fetchMessages: Messages;
 };
 
 
 export type QueryFetchGameInfosArgs = {
   gameId: Scalars['String'];
+};
+
+
+export type QueryFetchMessagesArgs = {
+  messagesId: Scalars['String'];
+};
+
+export type Subscription = {
+  __typename?: 'Subscription';
+  gameSubscription: Game;
+  messagesSubscription: Messages;
+};
+
+
+export type SubscriptionGameSubscriptionArgs = {
+  gameId: Scalars['String'];
+};
+
+
+export type SubscriptionMessagesSubscriptionArgs = {
+  messagesId: Scalars['String'];
 };
 
 export type User = {
@@ -138,6 +177,17 @@ export type MovePieceMutation = (
   ) }
 );
 
+export type SendMessageMutationVariables = Exact<{
+  message: Scalars['String'];
+  messagesId: Scalars['String'];
+}>;
+
+
+export type SendMessageMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'sendMessage'>
+);
+
 export type FetchGameInfosQueryVariables = Exact<{
   gameId: Scalars['String'];
 }>;
@@ -147,7 +197,7 @@ export type FetchGameInfosQuery = (
   { __typename?: 'Query' }
   & { fetchGameInfos?: Maybe<(
     { __typename?: 'Game' }
-    & Pick<Game, '_id' | 'gameBoard' | 'whoseMove' | 'whoWon'>
+    & Pick<Game, '_id' | 'gameBoard' | 'whoseMove' | 'whoWon' | 'messagesId'>
     & { user1: (
       { __typename?: 'User' }
       & Pick<User, '_id' | 'nickname'>
@@ -167,6 +217,39 @@ export type MeQuery = (
     { __typename?: 'User' }
     & Pick<User, '_id' | 'nickname'>
   )> }
+);
+
+export type GameSubscriptionSubscriptionVariables = Exact<{
+  gameId: Scalars['String'];
+}>;
+
+
+export type GameSubscriptionSubscription = (
+  { __typename?: 'Subscription' }
+  & { gameSubscription: (
+    { __typename?: 'Game' }
+    & Pick<Game, '_id' | 'whoWon' | 'whoseMove' | 'gameBoard' | 'messagesId'>
+    & { user1: (
+      { __typename?: 'User' }
+      & Pick<User, '_id' | 'nickname'>
+    ), user2?: Maybe<(
+      { __typename?: 'User' }
+      & Pick<User, '_id' | 'nickname'>
+    )> }
+  ) }
+);
+
+export type MessagesSubscriptionSubscriptionVariables = Exact<{
+  messagesId: Scalars['String'];
+}>;
+
+
+export type MessagesSubscriptionSubscription = (
+  { __typename?: 'Subscription' }
+  & { messagesSubscription: (
+    { __typename?: 'Messages' }
+    & Pick<Messages, '_id' | 'gameId' | 'messages'>
+  ) }
 );
 
 
@@ -320,6 +403,37 @@ export function useMovePieceMutation(baseOptions?: Apollo.MutationHookOptions<Mo
 export type MovePieceMutationHookResult = ReturnType<typeof useMovePieceMutation>;
 export type MovePieceMutationResult = Apollo.MutationResult<MovePieceMutation>;
 export type MovePieceMutationOptions = Apollo.BaseMutationOptions<MovePieceMutation, MovePieceMutationVariables>;
+export const SendMessageDocument = gql`
+    mutation SendMessage($message: String!, $messagesId: String!) {
+  sendMessage(message: $message, messagesId: $messagesId)
+}
+    `;
+export type SendMessageMutationFn = Apollo.MutationFunction<SendMessageMutation, SendMessageMutationVariables>;
+
+/**
+ * __useSendMessageMutation__
+ *
+ * To run a mutation, you first call `useSendMessageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSendMessageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [sendMessageMutation, { data, loading, error }] = useSendMessageMutation({
+ *   variables: {
+ *      message: // value for 'message'
+ *      messagesId: // value for 'messagesId'
+ *   },
+ * });
+ */
+export function useSendMessageMutation(baseOptions?: Apollo.MutationHookOptions<SendMessageMutation, SendMessageMutationVariables>) {
+        return Apollo.useMutation<SendMessageMutation, SendMessageMutationVariables>(SendMessageDocument, baseOptions);
+      }
+export type SendMessageMutationHookResult = ReturnType<typeof useSendMessageMutation>;
+export type SendMessageMutationResult = Apollo.MutationResult<SendMessageMutation>;
+export type SendMessageMutationOptions = Apollo.BaseMutationOptions<SendMessageMutation, SendMessageMutationVariables>;
 export const FetchGameInfosDocument = gql`
     query FetchGameInfos($gameId: String!) {
   fetchGameInfos(gameId: $gameId) {
@@ -335,6 +449,7 @@ export const FetchGameInfosDocument = gql`
       _id
       nickname
     }
+    messagesId
   }
 }
     `;
@@ -397,3 +512,75 @@ export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery
 export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
+export const GameSubscriptionDocument = gql`
+    subscription GameSubscription($gameId: String!) {
+  gameSubscription(gameId: $gameId) {
+    _id
+    user1 {
+      _id
+      nickname
+    }
+    user2 {
+      _id
+      nickname
+    }
+    whoWon
+    whoseMove
+    gameBoard
+    messagesId
+  }
+}
+    `;
+
+/**
+ * __useGameSubscriptionSubscription__
+ *
+ * To run a query within a React component, call `useGameSubscriptionSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useGameSubscriptionSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGameSubscriptionSubscription({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *   },
+ * });
+ */
+export function useGameSubscriptionSubscription(baseOptions: Apollo.SubscriptionHookOptions<GameSubscriptionSubscription, GameSubscriptionSubscriptionVariables>) {
+        return Apollo.useSubscription<GameSubscriptionSubscription, GameSubscriptionSubscriptionVariables>(GameSubscriptionDocument, baseOptions);
+      }
+export type GameSubscriptionSubscriptionHookResult = ReturnType<typeof useGameSubscriptionSubscription>;
+export type GameSubscriptionSubscriptionResult = Apollo.SubscriptionResult<GameSubscriptionSubscription>;
+export const MessagesSubscriptionDocument = gql`
+    subscription MessagesSubscription($messagesId: String!) {
+  messagesSubscription(messagesId: $messagesId) {
+    _id
+    gameId
+    messages
+  }
+}
+    `;
+
+/**
+ * __useMessagesSubscriptionSubscription__
+ *
+ * To run a query within a React component, call `useMessagesSubscriptionSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useMessagesSubscriptionSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMessagesSubscriptionSubscription({
+ *   variables: {
+ *      messagesId: // value for 'messagesId'
+ *   },
+ * });
+ */
+export function useMessagesSubscriptionSubscription(baseOptions: Apollo.SubscriptionHookOptions<MessagesSubscriptionSubscription, MessagesSubscriptionSubscriptionVariables>) {
+        return Apollo.useSubscription<MessagesSubscriptionSubscription, MessagesSubscriptionSubscriptionVariables>(MessagesSubscriptionDocument, baseOptions);
+      }
+export type MessagesSubscriptionSubscriptionHookResult = ReturnType<typeof useMessagesSubscriptionSubscription>;
+export type MessagesSubscriptionSubscriptionResult = Apollo.SubscriptionResult<MessagesSubscriptionSubscription>;

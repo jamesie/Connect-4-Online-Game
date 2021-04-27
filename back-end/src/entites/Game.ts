@@ -2,6 +2,7 @@ import { BaseEntity, Column, Entity, ObjectIdColumn  } from "typeorm";
 import { Field, ID, Int, ObjectType } from "type-graphql";
 import { User } from "./User";
 import { ObjectId } from 'mongodb'
+import { Messages } from './Messages';
 
 @ObjectType()
 @Entity()
@@ -37,6 +38,11 @@ export class Game extends BaseEntity {
 
   @Column({ nullable: true })
   user2Id: ObjectId;
+
+  @Field(() => ID, { nullable: true })
+  @Column()
+  messagesId: ObjectId;
+
 }
 
 

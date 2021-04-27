@@ -18,6 +18,7 @@ import { MyContext } from "../types";
 import { getMongoRepository } from "typeorm";
 import { ObjectId } from "mongodb";
 import { isAuth } from "../utils/isAuth";
+import { Messages, messageType } from "../entites/Messages";
 
 const GAME_INFO = "GAME_BOARD";
 
@@ -109,6 +110,17 @@ export class gameResolver {
       throw new Error(err as string);
     }
 
+    const messages = await getMongoRepository(Messages).save({
+      gameId: game._id,
+      messages: [[game.user1.nickname, "has joined the game!"]],
+      user1ID: user1._id,
+    });
+    await pubsub.publish(String(messages._id), messages);
+
+    game.messagesId = messages._id;
+
+    await getMongoRepository(Game).updateOne({ _id: game._id }, { $set: { messagesId: messages._id } });
+
     const payload = game;
     await pubsub.publish(String(game._id), payload);
 
@@ -149,6 +161,28 @@ export class gameResolver {
     game.user2 = joiningUser;
     game.user2Id = joiningUserId;
 
+    try {
+      var messagesEntity = await getMongoRepository(Messages).findOne({
+        where: { _id: new ObjectId(game.messagesId) },
+      });
+      if (messagesEntity) {
+        const messages = messagesEntity.messages;
+        messagesEntity.user2ID = joiningUser._id;
+
+        messages.push([game.user2.nickname, "has joined the game!"]);
+        await getMongoRepository(Messages).updateOne(
+          { _id: messagesEntity?._id },
+          { $set: { messages, user2: messagesEntity.user2ID } }
+        );
+
+        messagesEntity.messages = messages;
+        await pubsub.publish(String(messagesEntity._id), messagesEntity);
+      }
+      console.log(messagesEntity);
+    } catch (err) {
+      throw new Error(err as string);
+    }
+
     await getMongoRepository(Game).updateOne({ _id }, { $set: { user2: joiningUser, user2Id: joiningUserId } });
 
     const payload = game;
@@ -162,6 +196,7 @@ export class gameResolver {
     const _id: ObjectId = new ObjectId(String(gameId));
 
     const game = await getMongoRepository(Game).findOne({ where: { _id } });
+    console.log(game);
 
     if (!game) {
       return null;
@@ -226,6 +261,9 @@ export class gameResolver {
       throw new Error("Illegal Move Homie");
     }
 
+    game.gameBoard = proposedGameBoard;
+    game.whoseMove = req.session.userId == game.user1Id ? game.user2Id : game.user1Id;
+
     if (refereeResponse === 2) {
       // Player won
       await getMongoRepository(Game).updateOne(
@@ -240,7 +278,6 @@ export class gameResolver {
       );
     }
 
-
     await getMongoRepository(Game).updateOne(
       { _id },
       {
@@ -251,9 +288,20 @@ export class gameResolver {
       }
     );
 
+    const user1 = await getMongoRepository(User).findOne({ where: { _id: new ObjectId(game.user1Id) } });
+    if (!user1) {
+      throw new Error("Oh no! Something has gone terribly wrong, but how!?!?");
+    }
+    game.user1 = user1;
+
+    const user2 = await getMongoRepository(User).findOne({ where: { _id: new ObjectId(game.user2Id) } });
+    if (!user2) {
+      game.user2 = null;
+    } else {
+      game.user2 = user2;
+    }
     const payload = game;
     await pubsub.publish(String(gameId), payload);
-
     return game;
   }
 }
@@ -282,7 +330,6 @@ const referee = (curr: number[][], proposed: number[][], userColor: number): num
 
   const y: number = differences[0][0];
   const x: number = differences[0][1];
-
 
   if (curr[y][x] !== 0) {
     //move is replacing a piece / illegal move

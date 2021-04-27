@@ -12,5 +12,6 @@ query FetchGameInfos($gameId: String!){
       _id
       nickname
     }
+    messagesId
   }
 }

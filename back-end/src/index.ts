@@ -14,6 +14,8 @@ import { User } from "./entites/User";
 import { Socket, Server } from "socket.io";
 import { createServer } from "http";
 import { RedisPubSub } from "graphql-redis-subscriptions";
+import { messagesResolver } from './resolvers/messageResolver';
+import { Messages } from './entites/Messages';
 
 const PORT = 4000;
 
@@ -25,7 +27,7 @@ const main = async () => {
     password: "mongodb",
     logging: true,
     synchronize: true,
-    entities: [Game, User],
+    entities: [Game, User, Messages],
     migrations: [path.join(__dirname, "./migrations/*")],
   });
 
@@ -80,7 +82,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [gameResolver],
+      resolvers: [gameResolver, messagesResolver],
       pubSub: myPubSub,
       validate: false,
     }),
@@ -105,25 +107,9 @@ const main = async () => {
 
   apolloServer.installSubscriptionHandlers(http);
 
-  const io = new Server(http, {
-    cors: corsOptions,
-  });
-
-  io.on("connection", (socket: Socket) => {
-    socket.on("sendChatMsg", ({ roomId, id, msg }) => {
-      console.log(id, msg);
-      socket.to(roomId).emit("chatMsg", { id, msg });
-    });
-  });
-
   http.listen(PORT, () => {
     console.log(`server started on port: ${PORT}`);
   });
 };
 
 main().catch((err) => console.log(err));
-
-type JoinRoomType = {
-  nickname: string;
-  roomId: string;
-};
