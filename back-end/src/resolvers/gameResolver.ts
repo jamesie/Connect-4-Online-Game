@@ -231,7 +231,7 @@ export class gameResolver {
     @Ctx() { req }: MyContext,
     @PubSub() pubsub: PubSubEngine
   ): Promise<Game | null> {
-    if (proposedGameBoard.length !== 6 /* row check*/ || proposedGameBoard[0].length !== 7 /* column check*/) {
+    if (proposedGameBoard.length !== 6 /* row check */ || proposedGameBoard[0].length !== 7 /* column check */) {
       throw new Error("GameBoard malformed :yikes:");
     }
 
@@ -344,7 +344,8 @@ const referee = (curr: number[][], proposed: number[][], userColor: number): num
     }
   }
 
-  /* GAMEBOARD EXAMPLE
+  /* 
+    GAMEBOARD EXAMPLE
   [0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0],
