@@ -64,6 +64,9 @@ const JoinPageMessage: React.FC<JoinPageProps> = ({ joinGameId, gameInfo }) => {
 
   if (gameInfo.loading) {
     return <CircularProgress color='primary' size={100} />;
+  } else if (gameInfo.error){
+    router.push("/")
+    return(<div>error</div>)
   } else {
     return (
       <>
