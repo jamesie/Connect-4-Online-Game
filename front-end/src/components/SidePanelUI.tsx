@@ -44,13 +44,16 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ gameInfo, meInfo, gameId }) =
   useEffect(() => {
     if (messagesSubRes?.data?.messagesSubscription?.messages)
       setMessages(messagesSubRes?.data?.messagesSubscription?.messages);
-    scrollToBottom();
   }, [messagesSubRes?.data?.messagesSubscription?.messages]);
 
   useEffect(() => {
     if (fetchMessagesRes?.data?.fetchMessages?.messages)
       setMessages(fetchMessagesRes?.data?.fetchMessages?.messages)
   }, [fetchMessagesRes?.data?.fetchMessages?.messages]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages])
 
   const handleSendingMsg = (msg: string) => {
     const id = gameInfo?._id;
