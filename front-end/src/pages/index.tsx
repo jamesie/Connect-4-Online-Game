@@ -6,6 +6,7 @@ import { gql, useMutation, useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useCreateUserMutation, useCreateGameMutation } from "../types";
+import { withApollo } from "../utils/withApollo";
 
 interface indexProps {}
 
@@ -79,4 +80,4 @@ const index: React.FC<indexProps> = ({}) => {
   );
 };
 
-export default index;
+export default withApollo({ssr: true})(index);

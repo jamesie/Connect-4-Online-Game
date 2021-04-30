@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import JoinPageMessage from "../../components/JoinPageMessage";
 import styles from "../index.module.css";
+import { withApollo } from "../../utils/withApollo";
 
 const joinPage: NextPage<{ joinGameId: string }> = ({ joinGameId }) => {
   const router = useRouter();
@@ -30,4 +31,4 @@ joinPage.getInitialProps = ({ query }) => {
   };
 };
 
-export default joinPage;
+export default withApollo({ssr: true})(joinPage);

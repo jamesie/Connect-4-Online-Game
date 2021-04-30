@@ -21,6 +21,7 @@ import styles from "./gamePage.module.css";
 import { Textfit } from "react-textfit";
 import { useMessagesSubscriptionSubscription } from "../../types";
 import { red } from "@material-ui/core/colors";
+import { withApollo } from "../../utils/withApollo";
 
 type msgType = {
   username: string;
@@ -387,7 +388,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
               </div>
             </div>
           </div>
-          <SidePanelUI board={board} gameInfo={gameInfo} meInfo={meInfo} isUserMove={isUserMove} gameId={gameId} />
+          <SidePanelUI gameInfo={gameInfo} meInfo={meInfo} gameId={gameId}/>
         </div>
       </div>
     </div>
@@ -400,4 +401,4 @@ gamePage.getInitialProps = ({ query }) => {
   };
 };
 
-export default gamePage;
+export default withApollo()(gamePage);
