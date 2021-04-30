@@ -19,6 +19,12 @@
   color: #ffffff;
   font-size: 30px;
   text-align: center;
+}
+
+@media (max-width:1024px){
+  .formGrid{
+    height: inherit;
+  }
 
 }
 

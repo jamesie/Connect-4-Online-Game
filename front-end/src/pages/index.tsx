@@ -36,9 +36,13 @@ const index: React.FC<indexProps> = ({}) => {
         setErrorMessage(String(error));
       }
     } catch (error) {
-      console.log("err", error);
       setErrorMessage(String(error));
     }
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await createGameAndUser();
   };
 
   return (
@@ -48,10 +52,13 @@ const index: React.FC<indexProps> = ({}) => {
         <meta property='og:type' content='website' />
         <meta property='og:url' content='http://www.connect4online.xyz' />
         <meta property='og:image' content='https://i.imgur.com/aeNjMa7.png' />
-        <meta property='og:description' content='A site made for to easily play the classic game of connect 4 with friends and family.' />
+        <meta
+          property='og:description'
+          content='A site made for to easily play the classic game of connect 4 with friends and family.'
+        />
         <meta name='theme-color' content='#4b7ff6' />
         <meta name='twitter:card' content='summary_large_image' />
-        <meta name="keywords" content="Connect4 Connect Four Multiplayer Online Game" />
+        <meta name='keywords' content='Connect4 Connect Four Multiplayer Online Game' />
       </Head>
       <div className={styles.gradientBG}>
         <div style={{ display: "grid", placeItems: "center", left: 0, right: 0, top: 0, bottom: 0, position: "fixed" }}>
@@ -64,23 +71,26 @@ const index: React.FC<indexProps> = ({}) => {
               <div className={styles.formText} style={{ gridRow: 1, paddingTop: "20px" }}>
                 your nickname:
               </div>
-              <input
-                className={styles.nickNameInput}
-                style={{ gridRow: 2, paddingTop: "20px" }}
-                value={nickName}
-                onChange={(e) => {
-                  setNickname(e.target.value);
-                }}
-              />
-              <button
-                className={styles.submitButton}
-                style={{ gridRow: 3 }}
-                onClick={() => {
-                  createGameAndUser();
-                }}
-              >
-                Create Game!
-              </button>
+              <form 
+              className={styles.formStyle}
+              onSubmit={async (e) => {await handleSubmit(e)}
+              }>
+                  <input
+                    className={styles.nickNameInput}
+                    style={{ gridRow: 2, paddingTop: "20px" }}
+                    value={nickName}
+                    onChange={(e) => {
+                      setNickname(e.target.value);
+                    }}
+                  />
+                  <button
+                    className={styles.submitButton}
+                    style={{ gridRow: 3 }}
+                    onClick={() => {}}
+                  >
+                    Create Game!
+                  </button>
+              </form>
               <div className={styles.errorMessage}>{errorMessage}</div>
             </div>
           </div>
