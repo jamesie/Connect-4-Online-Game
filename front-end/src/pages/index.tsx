@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useCreateUserMutation, useCreateGameMutation } from "../types";
 import { withApollo } from "../utils/withApollo";
+import Head from "next/head";
 
 interface indexProps {}
 
@@ -18,9 +19,9 @@ const index: React.FC<indexProps> = ({}) => {
   const [createUser, createUserRes] = useCreateUserMutation({ variables: { username: nickName } });
   const [createGame, createGameRes] = useCreateGameMutation();
 
-  const fetchGCT = async() => {
+  const fetchGCT = async () => {
     return reRef.current.executeAsync();
-  }
+  };
 
   const createGameAndUser = async (): Promise<void> => {
     if (nickName.length < 4) {
@@ -29,8 +30,8 @@ const index: React.FC<indexProps> = ({}) => {
     try {
       await createUser();
       try {
-        const res = await createGame({ variables: { googleCaptchaToken: await fetchGCT()} });
-        router.push(`/game/${(res.data.createGame._id)}`)
+        const res = await createGame({ variables: { googleCaptchaToken: await fetchGCT() } });
+        router.push(`/game/${res.data.createGame._id}`);
       } catch (error) {
         setErrorMessage(String(error));
       }
@@ -42,6 +43,16 @@ const index: React.FC<indexProps> = ({}) => {
 
   return (
     <>
+      <Head>
+        <meta property='og:title' content='Connect4Online | Play Multiplayer Connect4 Online With Friends!' />
+        <meta property='og:type' content='website' />
+        <meta property='og:url' content='http://www.connect4online.xyz' />
+        <meta property='og:image' content='https://i.imgur.com/aeNjMa7.png' />
+        <meta property='og:description' content='A site made for to easily play the classic game of connect 4 with friends and family.' />
+        <meta name='theme-color' content='#4b7ff6' />
+        <meta name='twitter:card' content='summary_large_image' />
+        <meta name="keywords" content="Connect4 Connect Four Multiplayer Online Game" />
+      </Head>
       <div className={styles.gradientBG}>
         <div style={{ display: "grid", placeItems: "center", left: 0, right: 0, top: 0, bottom: 0, position: "fixed" }}>
           <div style={{ display: "grid" }}>
@@ -80,4 +91,4 @@ const index: React.FC<indexProps> = ({}) => {
   );
 };
 
-export default withApollo({ssr: true})(index);
+export default withApollo({ ssr: true })(index);

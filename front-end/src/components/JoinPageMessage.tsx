@@ -4,20 +4,21 @@ import React, { useEffect, useState } from "react";
 import styles from "../pages/index.module.css";
 import {  CircularProgress,  } from "@material-ui/core";
 import stylesJoin from "../pages/join/joinGame.module.css";
-import { useFetchGameInfosQuery, useJoinGameMutation, useCreateUserMutation } from "../types";
+import { useFetchGameInfosQuery, useJoinGameMutation, useCreateUserMutation, FetchGameInfosQuery, Exact } from "../types";
+import { QueryResult } from "@apollo/client";
 
 interface JoinPageProps {
   joinGameId: string;
+  gameInfo: QueryResult<FetchGameInfosQuery, Exact<{
+    gameId: string;
+}>>
 }
 
-const JoinPageMessage: React.FC<JoinPageProps> = ({ joinGameId }) => {
+const JoinPageMessage: React.FC<JoinPageProps> = ({ joinGameId, gameInfo }) => {
   const router = useRouter();
   const [nickName, setNickname] = useState<string>("");
-  const [inviteeNickName, setInviteeNickName] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>("");
-  const [jsx, setJSX] = useState<JSX.Element>(<></>);
-  const gameInfo = useFetchGameInfosQuery({ variables: { gameId: joinGameId } });
-  const [recieved, setRecieved] = useState<boolean>(false);
+  const [inviteeNickName, setInviteeNickName] = useState("")
   const [callJoinGame, joinGameData] = useJoinGameMutation();
   const [createUser, userData] = useCreateUserMutation();
 
