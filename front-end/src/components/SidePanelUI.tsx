@@ -1,38 +1,35 @@
-import { ApolloError, LazyQueryResult } from "@apollo/client";
-import React, { useState, useEffect, useRef } from "react";
-import styles from "../pages/game/gamePage.module.css";
-import {
-  MeQueryResult,
-  FetchGameInfosQuery,
-  Exact,
-  useGameSubscriptionSubscription,
-  GameSubscriptionSubscription,
-  useMessagesSubscriptionSubscription,
-} from "../types";
+import { CircularProgress } from "@material-ui/core";
+import React, { useEffect, useRef, useState } from "react";
 import { Textfit } from "react-textfit";
-import { CircularProgress, createMuiTheme } from "@material-ui/core";
-import { Socket } from "socket.io-client";
-import { DefaultEventsMap } from "socket.io-client/build/typed-events";
+import styles from "../pages/game/gamePage.module.css";
 import { gameRes } from "../pages/game/[gameId]";
-import { useSendMessageMutation } from '../types';
+import {
+  MeQueryResult, useFetchMessagesQuery, useMessagesSubscriptionSubscription, useSendMessageMutation
+} from "../types";
 
 interface SidePanelUIProps {
-  board: number[][];
   gameInfo: gameRes;
   meInfo: MeQueryResult;
-  isUserMove: boolean;
   gameId: string;
 }
 
-const SidePanelUI: React.FC<SidePanelUIProps> = ({ board, gameInfo, meInfo, isUserMove, gameId }) => {
+const SidePanelUI: React.FC<SidePanelUIProps> = ({ gameInfo, meInfo, gameId }) => {
   const [whosMoveJSX, setWhosMoveJSX] = useState<JSX.Element>(
     <>
       <CircularProgress color='primary' />
     </>
   );
 
+  const [callSendMessageMutation] = useSendMessageMutation();
+  const [messages, setMessages] = useState<string[][]>([]);
+  const fetchMessagesRes = useFetchMessagesQuery({
+    skip: !gameInfo?.messagesId,
+    variables: {
+      messagesId: gameInfo?.messagesId,
+    },
+  });
   const [msgInput, setMsgInput] = useState<string>("");
-  const messagesEndRef = useRef(null)
+  const messagesEndRef = useRef(null);
 
   const messagesSubRes = useMessagesSubscriptionSubscription({
     skip: !gameInfo?.messagesId,
@@ -41,24 +38,31 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ board, gameInfo, meInfo, isUs
     },
   });
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    scrollToBottom()
+    if (messagesSubRes?.data?.messagesSubscription?.messages)
+      setMessages(messagesSubRes?.data?.messagesSubscription?.messages);
+    scrollToBottom();
   }, [messagesSubRes?.data?.messagesSubscription?.messages]);
 
-  const [callSendMessageMutation] = useSendMessageMutation()
+  useEffect(() => {
+    if (fetchMessagesRes?.data?.fetchMessages?.messages)
+      setMessages(fetchMessagesRes?.data?.fetchMessages?.messages)
+  }, [fetchMessagesRes?.data?.fetchMessages?.messages]);
 
   const handleSendingMsg = (msg: string) => {
     const id = gameInfo?._id;
     if (!id) return;
     if (msg.length === 0) return;
     //send message
-    callSendMessageMutation({variables: {
-      messagesId: gameInfo?.messagesId,
-      message: msg
-    }})
+    callSendMessageMutation({
+      variables: {
+        messagesId: gameInfo?.messagesId,
+        message: msg,
+      },
+    });
     setMsgInput("");
   };
 
@@ -120,7 +124,7 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ board, gameInfo, meInfo, isUs
 
       <div style={{ gridRow: 2 }} className={styles.textChatWrapper}>
         <div className={styles.msgsArea}>
-          {messagesSubRes?.data?.messagesSubscription?.messages.map((i, j) => {
+          {messages.map((i, j) => {
             return (
               <>
                 <div className={styles.msgBackground} key={`messageNo.${j}`}>
@@ -132,7 +136,7 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ board, gameInfo, meInfo, isUs
               </>
             );
           })}
-          <div ref={messagesEndRef }/>
+          <div ref={messagesEndRef} />
         </div>
         <div className={styles.sendWrapper}>
           <input className={styles.textChatArea} value={msgInput} onChange={(e) => setMsgInput(e.target.value)} />

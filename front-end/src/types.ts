@@ -30,8 +30,8 @@ export type Messages = {
   _id: Scalars['ID'];
   gameId: Scalars['ID'];
   messages: Array<Array<Scalars['String']>>;
-  user1ID: Scalars['ID'];
-  user2ID?: Maybe<Scalars['ID']>;
+  user1Id: Scalars['ID'];
+  user2Id?: Maybe<Scalars['ID']>;
 };
 
 export type Mutation = {
@@ -206,6 +206,19 @@ export type FetchGameInfosQuery = (
       & Pick<User, '_id' | 'nickname'>
     )> }
   )> }
+);
+
+export type FetchMessagesQueryVariables = Exact<{
+  messagesId: Scalars['String'];
+}>;
+
+
+export type FetchMessagesQuery = (
+  { __typename?: 'Query' }
+  & { fetchMessages: (
+    { __typename?: 'Messages' }
+    & Pick<Messages, 'messages'>
+  ) }
 );
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
@@ -479,6 +492,39 @@ export function useFetchGameInfosLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
 export type FetchGameInfosQueryHookResult = ReturnType<typeof useFetchGameInfosQuery>;
 export type FetchGameInfosLazyQueryHookResult = ReturnType<typeof useFetchGameInfosLazyQuery>;
 export type FetchGameInfosQueryResult = Apollo.QueryResult<FetchGameInfosQuery, FetchGameInfosQueryVariables>;
+export const FetchMessagesDocument = gql`
+    query FetchMessages($messagesId: String!) {
+  fetchMessages(messagesId: $messagesId) {
+    messages
+  }
+}
+    `;
+
+/**
+ * __useFetchMessagesQuery__
+ *
+ * To run a query within a React component, call `useFetchMessagesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFetchMessagesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFetchMessagesQuery({
+ *   variables: {
+ *      messagesId: // value for 'messagesId'
+ *   },
+ * });
+ */
+export function useFetchMessagesQuery(baseOptions: Apollo.QueryHookOptions<FetchMessagesQuery, FetchMessagesQueryVariables>) {
+        return Apollo.useQuery<FetchMessagesQuery, FetchMessagesQueryVariables>(FetchMessagesDocument, baseOptions);
+      }
+export function useFetchMessagesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FetchMessagesQuery, FetchMessagesQueryVariables>) {
+          return Apollo.useLazyQuery<FetchMessagesQuery, FetchMessagesQueryVariables>(FetchMessagesDocument, baseOptions);
+        }
+export type FetchMessagesQueryHookResult = ReturnType<typeof useFetchMessagesQuery>;
+export type FetchMessagesLazyQueryHookResult = ReturnType<typeof useFetchMessagesLazyQuery>;
+export type FetchMessagesQueryResult = Apollo.QueryResult<FetchMessagesQuery, FetchMessagesQueryVariables>;
 export const MeDocument = gql`
     query Me {
   me {
