@@ -276,6 +276,7 @@ export class gameResolver {
           },
         }
       );
+      game.whoWon = req.session.userId == game.user1Id ? game.user1Id : game.user2Id
     }
 
     await getMongoRepository(Game).updateOne(
