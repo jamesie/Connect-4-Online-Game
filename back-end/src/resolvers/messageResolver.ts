@@ -15,58 +15,48 @@ import {
 } from "type-graphql";
 import { User } from "../entites/User";
 import { MyContext } from "../types";
-import { getMongoRepository } from "typeorm";
+import { getConnection, getMongoRepository } from "typeorm";
 import { ObjectId } from "mongodb";
 import { isAuth } from "../utils/isAuth";
-import { Messages, messageType } from '../entites/Messages';
+import { messagesToString } from "./gameResolver";
 
 @Resolver()
 export class messagesResolver {
-  @Query(() => Messages)
-  async fetchMessages( @Arg("messagesId") messagesId: string) {
-    return await getMongoRepository(Messages).findOne({ where: { _id: new ObjectId(messagesId) } })
-  }
-
-  @Subscription(() => Messages, { topics: (payload) => payload.args.messagesId })
-  async messagesSubscription(@Root() payLoad: any, @Arg("messagesId") _: string): Promise<Game | null> {
-    return payLoad;
-  }
-
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
-  async sendMessage(@Arg("messagesId") messagesId: string, @Ctx() { req }: MyContext, @Arg("message") message: string, @PubSub() pubsub: PubSubEngine): Promise<boolean>{
-    if (!message || message.length < 1)return false
-    
-    const messagesObj = await getMongoRepository(Messages).findOne({ where: { _id: new ObjectId(messagesId) } })
+  async sendMessage(
+    @Arg("gameUUID") gameId: string,
+    @Ctx() { req }: MyContext,
+    @Arg("message") message: string,
+    @PubSub() pubsub: PubSubEngine
+  ): Promise<boolean> {
+    let game = await Game.findOne({ gameUUID: gameId });
 
-    if (!messagesObj)return false
-    
-    const messagesArr: messageType[] = messagesObj?.messages
+    if (!game) return false;
 
-    const userObjID = new ObjectId(req.session?.userId)
+    if (req.session.userId != game.user1Id && req.session.userId != game.user2Id) {
+      throw new Error("Hmm pretty sus, you got any form of identification on you?");
+    }
 
-    const user = await getMongoRepository(User).findOne({ where: { _id: userObjID } })
+    const userSendingMsg = await User.findOne(req.session.userId);
 
-    if (!user) return false
+    if (!userSendingMsg) return false;
 
+    game.messages.push([userSendingMsg.nickname, String(message)])
 
-    if (req.session.userId != messagesObj.user1Id && req.session.userId != messagesObj.user2Id) return false;
-    
+    const savedGame = await getConnection()
+      .createQueryBuilder()
+      .insert()
+      .into(Game)
+      .values({
+        messages: () => `ARRAY[${messagesToString((game as Game).messages)}]`,
+      })
+      .returning("*")
+      .execute();
 
-    messagesArr.push([user.nickname, message])
+    const payload = game;
+    await pubsub.publish(String(gameId), payload);
 
-    messagesObj.messages = messagesArr
-
-    await getMongoRepository(Messages).updateOne(
-      { _id: messagesObj._id },
-      { $set: { messages: messagesArr } }
-    );
-
-    pubsub.publish(String(messagesId), messagesObj)
-
-    return true
+    return true;
   }
-
-  
-
 }

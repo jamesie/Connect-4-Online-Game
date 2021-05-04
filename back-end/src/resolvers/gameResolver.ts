@@ -1,9 +1,7 @@
-import { Game } from "../entites/Game";
 import {
   Arg,
-  Args,
   Ctx,
-  Int,
+  FieldResolver,
   Mutation,
   PubSub,
   PubSubEngine,
@@ -12,21 +10,58 @@ import {
   Root,
   Subscription,
   UseMiddleware,
+  Int,
 } from "type-graphql";
+import { getConnection } from "typeorm";
+import { v4 } from "uuid";
+import { Game, messageType } from "../entites/Game";
 import { User } from "../entites/User";
 import { MyContext } from "../types";
-import { getMongoRepository } from "typeorm";
-import { ObjectId } from "mongodb";
 import { isAuth } from "../utils/isAuth";
-import { Messages, messageType } from "../entites/Messages";
 
 const GAME_INFO = "GAME_BOARD";
 
-@Resolver()
+const boardToString = <T>(arr: T[]) => {
+  let stringedArr = "";
+  for (let i = 0; i < arr.length; i++) {
+    if (i === arr.length - 1) {
+      stringedArr = stringedArr + `[${arr[i]}]`;
+      continue;
+    }
+    stringedArr = stringedArr + `[${arr[i]}],`;
+  }
+  return stringedArr;
+};
+
+export const messagesToString = <T extends messageType>(arr: T[]) => {
+  let stringedArr = "";
+  for (let i = 0; i < arr.length; i++) {
+    if (i === arr.length - 1) {
+      stringedArr = stringedArr + `['${arr[i][0]}', '${arr[i][1]}']`;
+      continue;
+    }
+    stringedArr = stringedArr + `['${arr[i][0]}', '${arr[i][1]}'],`;
+  }
+  return stringedArr;
+};
+
+@Resolver(Game)
 export class gameResolver {
   @Query(() => String)
   ping() {
     return "pong";
+  }
+
+  @FieldResolver(() => User)
+  user1(@Root() game: Game) {
+    return User.findOne(game.user1Id);
+  }
+
+  @FieldResolver(() => User, { nullable: true })
+  user2(@Root() game: Game) {
+    if (!game.user2Id) return null;
+    if (game.user2) return game.user2;
+    return User.findOne(game.user2Id);
   }
 
   @Mutation(() => User, { nullable: true })
@@ -39,8 +74,8 @@ export class gameResolver {
     }
 
     try {
-      const savedUser = await getMongoRepository(User).save(user);
-      req.session.userId = savedUser._id;
+      const savedUser = await User.save(user);
+      req.session.userId = savedUser.id;
     } catch (err) {
       return null;
     }
@@ -50,9 +85,7 @@ export class gameResolver {
 
   @Query(() => User, { nullable: true })
   async me(@Ctx() { req }: MyContext): Promise<User | null> {
-    const _id = new ObjectId(req.session.userId);
-
-    const user = await getMongoRepository(User).findOne({ where: { _id } });
+    const user = await User.findOne(req.session.userId);
 
     if (!user) {
       return null;
@@ -93,38 +126,40 @@ export class gameResolver {
       [0, 0, 0, 0, 0, 0, 0],
     ]; // 7 by 6
 
-    const user1 = await getMongoRepository(User).findOne({ where: { _id: new ObjectId(req.session.userId) } });
+    const user1 = await User.findOne(req.session.userId);
 
     if (!user1) {
       throw new Error("Oh no! Something has gone terribly wrong, but how!?!?");
     }
 
     game.user1 = user1;
-    game.user1Id = game.user1._id;
-    game.whoseMove = user1._id;
-    game.moveNum = 0;
+    game.whoseMove = user1.id;
+    game.messages = [[user1.nickname.toUpperCase(), "has joined the game!"]];
 
-    try {
-      game = await getMongoRepository(Game).save(game);
-    } catch (err) {
-      throw new Error(err as string);
-    }
+    const savedGame = await getConnection()
+      .createQueryBuilder()
+      .insert()
+      .into(Game)
+      .values({
+        user1: game.user1,
+        whoseMove: game.user1.id,
+        messages: () => `ARRAY[${messagesToString(game.messages)}]`,
+        gameBoard: () => `ARRAY[${boardToString(game.gameBoard)}]`,
+        gameUUID: v4(),
+      })
+      .returning("*")
+      .execute();
 
-    const messages = await getMongoRepository(Messages).save({
-      gameId: game._id,
-      messages: [[game.user1.nickname, "has joined the game!"]],
-      user1Id: user1._id,
-    });
-    await pubsub.publish(String(messages._id), messages);
+    game.id = savedGame.raw[0].id;
 
-    game.messagesId = messages._id;
+    // const savedGame = await Game.save(game);
 
-    await getMongoRepository(Game).updateOne({ _id: game._id }, { $set: { messagesId: messages._id } });
+    const mygame = (await Game.findOne(game.id)) as Game;
 
     const payload = game;
-    await pubsub.publish(String(game._id), payload);
+    await pubsub.publish(String(game.id), payload);
 
-    return game;
+    return mygame;
   }
 
   @Mutation(() => Game, { nullable: true })
@@ -134,15 +169,13 @@ export class gameResolver {
     @Arg("gameId") gameId: string,
     @PubSub() pubsub: PubSubEngine
   ): Promise<Game | null> {
-    const _id: ObjectId = new ObjectId(gameId);
-
-    const game = await getMongoRepository(Game).findOne({ where: { _id } });
+    let game = await Game.findOne({ gameUUID: gameId });
 
     if (!game) {
       return null;
     }
 
-    if (new ObjectId(req.session.userId).equals(game.user1Id)) {
+    if (req.session.userId === game.user1Id) {
       throw new Error("Trying to join own game");
     }
 
@@ -150,69 +183,42 @@ export class gameResolver {
       throw new Error("Game full");
     }
 
-    const joiningUserId = new ObjectId(req.session.userId);
-    const joiningUser = await getMongoRepository(User).findOne({ where: { _id: joiningUserId } });
+    const joiningUser = await User.findOne({ id: req.session.userId });
 
     if (!joiningUser) {
       throw new Error("Oh no! Something has gone terribly wrong, but how!?!?");
     }
 
-    game.user1 = (await getMongoRepository(User).findOne({ where: { _id: new ObjectId(game.user1Id) } })) as User;
+    if (!game.messages) game.messages = [[joiningUser.nickname, "has joined the game!"]];
+    else game.messages.push([joiningUser.nickname.toUpperCase(), "has joined the game!"]);
+
     game.user2 = joiningUser;
-    game.user2Id = joiningUserId;
 
-    try {
-      var messagesEntity = await getMongoRepository(Messages).findOne({
-        where: { _id: new ObjectId(game.messagesId) },
-      });
-      if (messagesEntity) {
-        const messages = messagesEntity.messages;
-        messagesEntity.user2Id = joiningUser._id;
+    const savedGame = await getConnection()
+      .createQueryBuilder()
+      .update(Game)
+      .set({
+        messages: () => `ARRAY[${messagesToString((game as Game).messages)}]`,
+        user2: game.user2,
+      })
+      .where("gameUUID = :gameUUID", { gameUUID: game.gameUUID })
+      .returning("*")
+      .execute();
 
-        messages.push([game.user2.nickname, "has joined the game!"]);
-        await getMongoRepository(Messages).updateOne(
-          { _id: messagesEntity?._id },
-          { $set: { messages, user2Id: messagesEntity.user2Id } }
-        );
-
-        messagesEntity.messages = messages;
-        await pubsub.publish(String(messagesEntity._id), messagesEntity);
-      }
-      console.log(messagesEntity);
-    } catch (err) {
-      throw new Error(err as string);
-    }
-
-    await getMongoRepository(Game).updateOne({ _id }, { $set: { user2: joiningUser, user2Id: joiningUserId } });
-
+    game = savedGame.raw[0] as Game;
     const payload = game;
     await pubsub.publish(String(gameId), payload);
+    console.log(game);
 
     return game;
   }
 
   @Query(() => Game, { nullable: true })
   async fetchGameInfos(@Arg("gameId") gameId: string): Promise<Game | null> {
-    const _id: ObjectId = new ObjectId(String(gameId));
-
-    const game = await getMongoRepository(Game).findOne({ where: { _id } });
-    console.log(game);
+    const game = await Game.findOne({ gameUUID: gameId });
 
     if (!game) {
       return null;
-    }
-
-    const user1 = await getMongoRepository(User).findOne({ where: { _id: new ObjectId(game.user1Id) } });
-    if (!user1) {
-      throw new Error("Oh no! Something has gone terribly wrong, but how!?!?");
-    }
-    game.user1 = user1;
-
-    const user2 = await getMongoRepository(User).findOne({ where: { _id: new ObjectId(game.user2Id) } });
-    if (!user2) {
-      game.user2 = null;
-    } else {
-      game.user2 = user2;
     }
 
     return game;
@@ -235,9 +241,7 @@ export class gameResolver {
       throw new Error("GameBoard malformed :yikes:");
     }
 
-    const _id: ObjectId = new ObjectId(gameId);
-
-    const game = await getMongoRepository(Game).findOne({ where: { _id } });
+    const game = await Game.findOne({ gameUUID: gameId });
 
     if (!game) {
       return null;
@@ -266,41 +270,32 @@ export class gameResolver {
 
     if (refereeResponse === 2) {
       // Player won
-      await getMongoRepository(Game).updateOne(
-        { _id },
-        {
-          $set: {
-            gameBoard: proposedGameBoard,
-            whoWon: req.session.userId == game.user1Id ? game.user1Id : game.user2Id,
-            whoseMove: req.session.userId == game.user1Id ? game.user2Id : game.user1Id,
-          },
-        }
-      );
-      game.whoWon = req.session.userId == game.user1Id ? game.user1Id : game.user2Id
-    }
-
-    await getMongoRepository(Game).updateOne(
-      { _id },
-      {
-        $set: {
+      await getConnection()
+        .createQueryBuilder()
+        .update(Game)
+        .set({
           gameBoard: proposedGameBoard,
+          whoWon: req.session.userId == game.user1Id ? game.user1Id : game.user2Id,
           whoseMove: req.session.userId == game.user1Id ? game.user2Id : game.user1Id,
-        },
-      }
-    );
+        })
+        .where("gameUUID = :gameUUID", { gameUUID: game.gameUUID })
+        .execute();
 
-    const user1 = await getMongoRepository(User).findOne({ where: { _id: new ObjectId(game.user1Id) } });
-    if (!user1) {
-      throw new Error("Oh no! Something has gone terribly wrong, but how!?!?");
-    }
-    game.user1 = user1;
-
-    const user2 = await getMongoRepository(User).findOne({ where: { _id: new ObjectId(game.user2Id) } });
-    if (!user2) {
-      game.user2 = null;
+      game.whoWon = req.session.userId == game.user1Id ? game.user1Id : game.user2Id;
     } else {
-      game.user2 = user2;
+      //successfull move
+      await getConnection()
+        .createQueryBuilder()
+        .update(Game)
+        .set({
+          gameBoard: proposedGameBoard,
+          whoWon: req.session.userId == game.user1Id ? game.user1Id : game.user2Id,
+          whoseMove: req.session.userId == game.user1Id ? game.user2Id : game.user1Id,
+        })
+        .where("gameUUID = :gameUUID", { gameUUID: game.gameUUID })
+        .execute();
     }
+
     const payload = game;
     await pubsub.publish(String(gameId), payload);
     return game;
@@ -319,8 +314,10 @@ const referee = (curr: number[][], proposed: number[][], userColor: number): num
     }
   }
 
+  console.log("differences", differences);
+
   if (differences.length > 1 || differences.length == 0) {
-    console.log("no move or hacked board");
+    console.log("differences.length > 1", differences.length > 1);
     return 0;
   }
 
@@ -345,15 +342,15 @@ const referee = (curr: number[][], proposed: number[][], userColor: number): num
     }
   }
 
-  /* 
-    GAMEBOARD EXAMPLE
-  [0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 2],
-  [1, 0, 0, 1, 0, 0, 2],
-  */
+  /*
+      GAMEBOARD EXAMPLE
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 2],
+    [1, 0, 0, 1, 0, 0, 2],
+    */
 
   if (hasWon(proposed, userColor)) {
     return 2;
@@ -420,3 +417,45 @@ const hasWon = (board: number[][], userColor: number): boolean => {
 
   return false;
 };
+
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY
+///TODO: FIX ID ERROR ON MOVE, FIX GAMEBOARD ON MOVE THINGY

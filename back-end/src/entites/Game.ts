@@ -1,48 +1,54 @@
-import { BaseEntity, Column, Entity, ObjectIdColumn  } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, ObjectIdColumn, OneToOne, PrimaryGeneratedColumn  } from "typeorm";
 import { Field, ID, Int, ObjectType } from "type-graphql";
 import { User } from "./User";
 import { ObjectId } from 'mongodb'
-import { Messages } from './Messages';
+import { uuid } from 'uuidv4';
+
+export type messageType = [string, string]
 
 @ObjectType()
 @Entity()
 export class Game extends BaseEntity {
-  @Field(() => ID)
-  @ObjectIdColumn()
-  _id: ObjectId;
-
   @Field()
+  @PrimaryGeneratedColumn()
+  id!: string;
+
+  @ManyToOne(() => User, (user) => user.creator)
+  @JoinColumn()
   user1!: User;
 
-  @Field(() => User, { nullable: true })
+  @ManyToOne(() => User, (user) => user.joiner)
+  @JoinColumn()
   user2: User | null;
 
   @Field(() => [[Int]], { nullable: true })
-  @Column()
+  @Column("int", { array: true })
   gameBoard: number[][]
 
-  @Field(() => Int, {defaultValue: 0})
+  @Field()
   @Column()
-  moveNum: number
+  whoseMove: number;
 
-  @Field(() => ID)
-  @Column()
-  whoseMove: ObjectId;
-
-  @Field(() => ID, { nullable: true })
-  @Column()
-  whoWon: ObjectId;
-
-  @Column()
-  user1Id!: ObjectId
-
+  @Field({ nullable: true })
   @Column({ nullable: true })
-  user2Id: ObjectId;
+  whoWon: number;
 
-  @Field(() => ID, { nullable: true })
+  @Field(() => [[String, String]])
+  @Column("simple-array", { array: true})
+  messages!: messageType[];
+
+  @Field(() => Int)
   @Column()
-  messagesId: ObjectId;
+  user1Id: number
 
+
+  @Field(() => Int)
+  @Column({ nullable: true })
+  user2Id: number
+
+  @Field(() => String)
+  @Column({unique: true})
+  gameUUID: string
 }
 
 
