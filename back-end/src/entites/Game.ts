@@ -1,8 +1,6 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, ObjectIdColumn, OneToOne, PrimaryGeneratedColumn  } from "typeorm";
-import { Field, ID, Int, ObjectType } from "type-graphql";
+import { Field, Int, ObjectType } from "type-graphql";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./User";
-import { ObjectId } from 'mongodb'
-import { uuid } from 'uuidv4';
 
 export type messageType = [string, string]
 
