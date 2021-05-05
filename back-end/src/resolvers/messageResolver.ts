@@ -42,19 +42,20 @@ export class messagesResolver {
 
     if (!userSendingMsg) return false;
 
-    game.messages.push([userSendingMsg.nickname, String(message)])
+    game.messages.push([userSendingMsg.nickname, String(message)]);
 
     const savedGame = await getConnection()
       .createQueryBuilder()
-      .insert()
-      .into(Game)
-      .values({
+      .update(Game)
+      .set({
         messages: () => `ARRAY[${messagesToString((game as Game).messages)}]`,
       })
       .returning("*")
       .execute();
 
-    const payload = game;
+    savedGame.raw[0].user2Id = game.user2Id;
+    
+    const payload = savedGame.raw[0];
     await pubsub.publish(String(gameId), payload);
 
     return true;
