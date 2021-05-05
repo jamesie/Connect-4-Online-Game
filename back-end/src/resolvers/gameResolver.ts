@@ -289,7 +289,6 @@ export class gameResolver {
         .update(Game)
         .set({
           gameBoard: proposedGameBoard,
-          whoWon: req.session.userId == game.user1Id ? game.user1Id : game.user2Id,
           whoseMove: req.session.userId == game.user1Id ? game.user2Id : game.user1Id,
         })
         .where("gameUUID = :gameUUID", { gameUUID: game.gameUUID })
