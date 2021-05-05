@@ -1,14 +1,6 @@
-mutation JoinGame($gameId: String!){
-  joinGame(gameId: $gameId){
-    _id
-    gameBoard
-    user1 {
-      _id
-      nickname
-    }
-    user2 {
-      _id
-      nickname
-    }
+mutation JoinGame($gameId: String!) {
+  joinGame(gameId: $gameId) {
+    id
+    gameUUID
   }
 }

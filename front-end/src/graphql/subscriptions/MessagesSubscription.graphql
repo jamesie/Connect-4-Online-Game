@@ -1,7 +1,0 @@
-subscription MessagesSubscription($messagesId: String!){
-  messagesSubscription(messagesId: $messagesId){
-    _id
-    gameId
-    messages
-  }
-}

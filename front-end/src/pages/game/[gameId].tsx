@@ -1,27 +1,22 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import SidePanelUI from "../../components/SidePanelUI";
 import {
+  Game,
+  MeQuery,
   useFetchGameInfosLazyQuery,
+  useGameSubscriptionSubscription,
   useMeQuery,
   useMovePieceMutation,
-  useGameSubscriptionSubscription,
-  GameSubscriptionSubscription,
-  MeQuery,
-  FetchGameInfosQuery,
   User,
-  Game,
 } from "../../types";
 import { doArrsMatch } from "../../utils/doArrsMatch";
 import { findDifference } from "../../utils/FindDifference";
 import { sleep } from "../../utils/sleep";
+import { withApollo } from "../../utils/withApollo";
 import stylesI from "../index.module.css";
 import styles from "./gamePage.module.css";
-import { Textfit } from "react-textfit";
-import { useMessagesSubscriptionSubscription } from "../../types";
-import { red } from "@material-ui/core/colors";
-import { withApollo } from "../../utils/withApollo";
 
 type msgType = {
   username: string;
@@ -30,22 +25,20 @@ type msgType = {
 
 export type gameRes = {
   __typename?: "Game";
-} & Pick<Game, "_id" | "gameBoard" | "whoseMove" | "whoWon" | "messagesId"> & {
+} & Pick<Game, "id" | "gameBoard" | "whoseMove" | "whoWon" | "messages" | "gameUUID"> & {
     user1: {
       __typename?: "User";
-    } & Pick<User, "_id" | "nickname">;
+    } & Pick<User, "id" | "nickname">;
     user2?: {
       __typename?: "User";
-    } & Pick<User, "_id" | "nickname">;
+    } & Pick<User, "id" | "nickname">;
   };
 
 const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   const router = useRouter();
   const [isUserMove, setIsUserMove] = useState<boolean>(false);
   const [hoverArr, setHoverArr] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
-  const [fallingPiecesJSX, setFallingPiecesJSX] = useState<JSX.Element[]>([
-    <></>,
-  ]);
+  const [fallingPiecesJSX, setFallingPiecesJSX] = useState<JSX.Element[]>([<></>]);
   const [hoverPieces, setHoverPieces] = useState<JSX.Element[]>([<></>]);
   const [fallenPieces, setFallenPieces] = useState<JSX.Element[]>([<></>]);
   const [board, setBoard] = useState<number[][]>([
@@ -81,7 +74,6 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
   const makePlayerMove = async (proposedBoard: number[][]) => {
     try {
       await moveMutation({ variables: { gameBoard: proposedBoard, gameId } });
-      console.log("completed mutation");
     } catch (err) {
       await fetchGameInfosRes.refetch({
         gameId,
@@ -110,7 +102,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
               let depth = 72;
               for (let j = 0; j < 6; j++) {
                 //finding depth/y coordinate of move
-                console.log(j, i);
+;
                 if (j === 5) {
                   depth = j;
                   break;
@@ -123,22 +115,23 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
               if (depth === 72) return; //there mustnt be an availible move
 
               const newBoard = board.map((item, index) => {
-                if (index === depth){
+                if (index === depth) {
                   return item.map((item2, index2) => {
                     if (index2 === i) {
-                      return playerNumber
+                      return playerNumber;
                     } else {
-                      return item2
+                      return item2;
                     }
                   });
                 } else {
-                  return item
+                  return item;
                 }
               });
               newBoard[depth][i] = playerNumber;
-              console.log(newBoard);
+              setGameInfo({...gameInfo, gameBoard: newBoard})
+              console.log(gameInfo)
               makePlayerMove(newBoard);
-              setHoverArr([0, 0, 0, 0, 0, 0, 0])
+              setHoverArr([0, 0, 0, 0, 0, 0, 0]);
             }}
           />
         </>
@@ -244,9 +237,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
     if (!meInfo.data) {
       return;
     }
-    console.log("NEW PUBSUB UPDATE")
     gameUpdater(gameSubRes.data.gameSubscription, meInfo.data);
-    console.log("updated with this gameSubRes data: ", gameSubRes.data.gameSubscription);
   }, [gameSubRes.data, meInfo.data]);
 
   useEffect(() => {
@@ -263,15 +254,14 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
       return;
     }
     if (
-      fetchGameInfosRes.data.fetchGameInfos.user1?._id !== meInfo.data.me._id &&
-      fetchGameInfosRes.data.fetchGameInfos.user2?._id !== meInfo.data.me._id
+      fetchGameInfosRes.data.fetchGameInfos.user1?.id !== meInfo.data.me.id &&
+      fetchGameInfosRes.data.fetchGameInfos.user2?.id !== meInfo.data.me.id
     ) {
       //If we cant find a game for this ID we've assumed theyve incorrectly typed in the game id so we can send them back to homepage
       //we could possibly make this display a game not found error
       router.push("/");
     }
     gameUpdater(fetchGameInfosRes.data.fetchGameInfos, meInfo.data);
-    console.log("updated with this fetchGameInfos data: ", fetchGameInfosRes.data.fetchGameInfos);
   }, [fetchGameInfosRes.data]);
 
   const gameUpdater = async (gameRes: gameRes, meRes: MeQuery, skipAnimation?: boolean) => {
@@ -287,12 +277,9 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
       const newBoard = gameRes.gameBoard.map((item) => {
         return item;
       });
-      console.log("newBoard" , newBoard)
-      console.log("oldBoard" ,oldBoard)
       const differences = findDifference(newBoard, oldBoard);
-      console.log("difference", differences);
       //if (skipAnimation) {
-        await handleDifference(differences);
+      await handleDifference(differences);
       //}
       setBoard(newBoard);
       handleFallenPieces(newBoard);
@@ -302,7 +289,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
       setOpponentName(gameRes.user2.nickname);
     }
 
-    if (gameRes.whoseMove === meRes.me._id) {
+    if (gameRes.whoseMove === meRes.me.id) {
       setIsUserMove(true);
     } else {
       setIsUserMove(false);
@@ -312,7 +299,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
       setIsUserMove(false);
     }
 
-    if (meRes.me._id === gameRes.user1._id) {
+    if (meRes.me.id === gameRes.user1.id) {
       setPlayerColor("red");
       setPlayerNumber(1);
     } else {
@@ -337,9 +324,9 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
             onClick={() => {}}
             style={{
               gridColumn: difference[1] + 1,
-              gridRow: 1
+              gridRow: 1,
             }}
-            key={difference[1] + "falling"}
+            key={difference[1] + "fallingUpdated"}
             className={findStyle(difference[0])}
           />
         );
@@ -348,14 +335,11 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
 
     await sleep(500);
 
-    setFallingPiecesJSX(
-      [<></>]
-    );
+    setFallingPiecesJSX([<></>]);
     setIsUserMove(oldUserMove);
   };
 
   const findStyle = (row: number) => {
-    console.log(row + 1);
     switch (row + 1) {
       case 1:
         return styles.pieceDown1;
@@ -388,7 +372,7 @@ const gamePage: NextPage<{ gameId: string }> = ({ gameId }) => {
               </div>
             </div>
           </div>
-          <SidePanelUI gameInfo={gameInfo} meInfo={meInfo} gameId={gameId}/>
+          <SidePanelUI gameInfo={gameInfo} meInfo={meInfo} gameId={gameId} />
         </div>
       </div>
     </div>

@@ -1,17 +1,18 @@
 subscription GameSubscription($gameId: String!) {
-  gameSubscription(gameId:$gameId){
-    _id
-    user1{
-      _id
+  gameSubscription(gameId: $gameId) {
+    id
+    user1 {
+      id
       nickname
     }
-    user2{
-      _id
+    user2 {
+      id
       nickname
     }
     whoWon
     whoseMove
     gameBoard
-    messagesId
+    messages
+    gameUUID
   }
 }

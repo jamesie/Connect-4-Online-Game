@@ -1,5 +1,0 @@
-query FetchMessages($messagesId: String!){
-  fetchMessages(messagesId:$messagesId){
-  	messages
-  }
-}

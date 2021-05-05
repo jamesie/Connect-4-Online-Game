@@ -4,7 +4,7 @@ import { Textfit } from "react-textfit";
 import styles from "../pages/game/gamePage.module.css";
 import { gameRes } from "../pages/game/[gameId]";
 import {
-  MeQueryResult, useFetchMessagesQuery, useMessagesSubscriptionSubscription, useSendMessageMutation
+  MeQueryResult, useSendMessageMutation
 } from "../types";
 
 interface SidePanelUIProps {
@@ -22,47 +22,31 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ gameInfo, meInfo, gameId }) =
 
   const [callSendMessageMutation] = useSendMessageMutation();
   const [messages, setMessages] = useState<string[][]>([]);
-  const fetchMessagesRes = useFetchMessagesQuery({
-    skip: !gameInfo?.messagesId,
-    variables: {
-      messagesId: gameInfo?.messagesId,
-    },
-  });
   const [msgInput, setMsgInput] = useState<string>("");
   const messagesEndRef = useRef(null);
 
-  const messagesSubRes = useMessagesSubscriptionSubscription({
-    skip: !gameInfo?.messagesId,
-    variables: {
-      messagesId: gameInfo?.messagesId,
-    },
-  });
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
-    if (messagesSubRes?.data?.messagesSubscription?.messages)
-      setMessages(messagesSubRes?.data?.messagesSubscription?.messages);
-  }, [messagesSubRes?.data?.messagesSubscription?.messages]);
+    if (gameInfo?.messages)
+      setMessages(gameInfo?.messages);
+  }, [gameInfo?.messages]);
 
-  useEffect(() => {
-    if (fetchMessagesRes?.data?.fetchMessages?.messages)
-      setMessages(fetchMessagesRes?.data?.fetchMessages?.messages)
-  }, [fetchMessagesRes?.data?.fetchMessages?.messages]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages])
 
   const handleSendingMsg = (msg: string) => {
-    const id = gameInfo?._id;
+    const id = gameInfo?.id;
     if (!id) return;
     if (msg.length === 0) return;
     //send message
     callSendMessageMutation({
       variables: {
-        messagesId: gameInfo?.messagesId,
+        gameUUID: gameInfo?.gameUUID,
         message: msg,
       },
     });
@@ -87,10 +71,10 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ gameInfo, meInfo, gameId }) =
         <>
           <div className={styles.textWrapper}>
             <Textfit mode='multi' className={styles.whosTurnFont} style={{ height: "150px", width: "250px" }}>
-              {gameInfo?.whoWon === meInfo?.data?.me?._id
+              {gameInfo?.whoWon === meInfo?.data?.me?.id
                 ? ` You Won! Congratulations!`
                 : ` Opponent ${
-                    gameInfo?.user1._id === meInfo?.data?.me?._id
+                    gameInfo?.user1.id === meInfo?.data?.me?.id
                       ? gameInfo?.user2.nickname.toUpperCase()
                       : gameInfo?.user1.nickname.toUpperCase()
                   } won! Unlucky!`}
@@ -103,10 +87,10 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ gameInfo, meInfo, gameId }) =
         <>
           <div className={styles.textWrapper}>
             <Textfit mode='multi' className={styles.whosTurnFont} style={{ height: "150px", width: "250px" }}>
-              {gameInfo?.whoseMove === meInfo?.data?.me?._id
+              {gameInfo?.whoseMove === meInfo?.data?.me?.id
                 ? ` It's Your Turn!`
                 : ` It's ${
-                    gameInfo?.user1._id === meInfo?.data?.me?._id
+                    gameInfo?.user1.id === meInfo?.data?.me?.id
                       ? gameInfo?.user2.nickname.toUpperCase()
                       : gameInfo?.user1.nickname.toUpperCase()
                   }'s Turn!`}

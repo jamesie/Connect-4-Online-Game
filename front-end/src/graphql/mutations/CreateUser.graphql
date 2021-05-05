@@ -1,6 +1,6 @@
 mutation CreateUser($username: String!){
 	createUser(username: $username){
-    _id
+    id
     nickname
   }
 }

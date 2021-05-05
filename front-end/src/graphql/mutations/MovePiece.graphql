@@ -1,6 +1,6 @@
 mutation MovePiece($gameBoard: [[Int!]!]!, $gameId: String!){
   movePiece(gameBoard:$gameBoard, gameId: $gameId){
-    _id
+    id
     gameBoard
   }
 }

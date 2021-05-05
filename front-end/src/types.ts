@@ -15,23 +15,16 @@ export type Scalars = {
 
 export type Game = {
   __typename?: 'Game';
-  _id: Scalars['ID'];
+  id: Scalars['String'];
+  gameBoard?: Maybe<Array<Array<Scalars['Int']>>>;
+  whoseMove: Scalars['Float'];
+  whoWon?: Maybe<Scalars['Float']>;
+  messages: Array<Array<Scalars['String']>>;
+  user1Id: Scalars['Int'];
+  user2Id: Scalars['Int'];
+  gameUUID: Scalars['String'];
   user1: User;
   user2?: Maybe<User>;
-  gameBoard?: Maybe<Array<Array<Scalars['Int']>>>;
-  moveNum?: Maybe<Scalars['Int']>;
-  whoseMove: Scalars['ID'];
-  whoWon?: Maybe<Scalars['ID']>;
-  messagesId?: Maybe<Scalars['ID']>;
-};
-
-export type Messages = {
-  __typename?: 'Messages';
-  _id: Scalars['ID'];
-  gameId: Scalars['ID'];
-  messages: Array<Array<Scalars['String']>>;
-  user1Id: Scalars['ID'];
-  user2Id?: Maybe<Scalars['ID']>;
 };
 
 export type Mutation = {
@@ -67,7 +60,7 @@ export type MutationMovePieceArgs = {
 
 export type MutationSendMessageArgs = {
   message: Scalars['String'];
-  messagesId: Scalars['String'];
+  gameUUID: Scalars['String'];
 };
 
 export type Query = {
@@ -75,7 +68,6 @@ export type Query = {
   ping: Scalars['String'];
   me?: Maybe<User>;
   fetchGameInfos?: Maybe<Game>;
-  fetchMessages: Messages;
 };
 
 
@@ -83,15 +75,9 @@ export type QueryFetchGameInfosArgs = {
   gameId: Scalars['String'];
 };
 
-
-export type QueryFetchMessagesArgs = {
-  messagesId: Scalars['String'];
-};
-
 export type Subscription = {
   __typename?: 'Subscription';
   gameSubscription: Game;
-  messagesSubscription: Messages;
 };
 
 
@@ -99,14 +85,9 @@ export type SubscriptionGameSubscriptionArgs = {
   gameId: Scalars['String'];
 };
 
-
-export type SubscriptionMessagesSubscriptionArgs = {
-  messagesId: Scalars['String'];
-};
-
 export type User = {
   __typename?: 'User';
-  _id: Scalars['ID'];
+  id: Scalars['Float'];
   nickname: Scalars['String'];
 };
 
@@ -119,13 +100,13 @@ export type CreateGameMutation = (
   { __typename?: 'Mutation' }
   & { createGame?: Maybe<(
     { __typename?: 'Game' }
-    & Pick<Game, '_id' | 'gameBoard' | 'whoseMove'>
+    & Pick<Game, 'id' | 'gameBoard' | 'whoseMove' | 'gameUUID'>
     & { user1: (
       { __typename?: 'User' }
-      & Pick<User, '_id' | 'nickname'>
+      & Pick<User, 'id' | 'nickname'>
     ), user2?: Maybe<(
       { __typename?: 'User' }
-      & Pick<User, '_id' | 'nickname'>
+      & Pick<User, 'id' | 'nickname'>
     )> }
   )> }
 );
@@ -139,7 +120,7 @@ export type CreateUserMutation = (
   { __typename?: 'Mutation' }
   & { createUser?: Maybe<(
     { __typename?: 'User' }
-    & Pick<User, '_id' | 'nickname'>
+    & Pick<User, 'id' | 'nickname'>
   )> }
 );
 
@@ -152,14 +133,7 @@ export type JoinGameMutation = (
   { __typename?: 'Mutation' }
   & { joinGame?: Maybe<(
     { __typename?: 'Game' }
-    & Pick<Game, '_id' | 'gameBoard'>
-    & { user1: (
-      { __typename?: 'User' }
-      & Pick<User, '_id' | 'nickname'>
-    ), user2?: Maybe<(
-      { __typename?: 'User' }
-      & Pick<User, '_id' | 'nickname'>
-    )> }
+    & Pick<Game, 'id' | 'gameUUID'>
   )> }
 );
 
@@ -173,13 +147,13 @@ export type MovePieceMutation = (
   { __typename?: 'Mutation' }
   & { movePiece: (
     { __typename?: 'Game' }
-    & Pick<Game, '_id' | 'gameBoard'>
+    & Pick<Game, 'id' | 'gameBoard'>
   ) }
 );
 
 export type SendMessageMutationVariables = Exact<{
   message: Scalars['String'];
-  messagesId: Scalars['String'];
+  gameUUID: Scalars['String'];
 }>;
 
 
@@ -197,28 +171,15 @@ export type FetchGameInfosQuery = (
   { __typename?: 'Query' }
   & { fetchGameInfos?: Maybe<(
     { __typename?: 'Game' }
-    & Pick<Game, '_id' | 'gameBoard' | 'whoseMove' | 'whoWon' | 'messagesId'>
+    & Pick<Game, 'id' | 'whoWon' | 'whoseMove' | 'gameBoard' | 'messages' | 'gameUUID'>
     & { user1: (
       { __typename?: 'User' }
-      & Pick<User, '_id' | 'nickname'>
+      & Pick<User, 'id' | 'nickname'>
     ), user2?: Maybe<(
       { __typename?: 'User' }
-      & Pick<User, '_id' | 'nickname'>
+      & Pick<User, 'id' | 'nickname'>
     )> }
   )> }
-);
-
-export type FetchMessagesQueryVariables = Exact<{
-  messagesId: Scalars['String'];
-}>;
-
-
-export type FetchMessagesQuery = (
-  { __typename?: 'Query' }
-  & { fetchMessages: (
-    { __typename?: 'Messages' }
-    & Pick<Messages, 'messages'>
-  ) }
 );
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
@@ -228,7 +189,7 @@ export type MeQuery = (
   { __typename?: 'Query' }
   & { me?: Maybe<(
     { __typename?: 'User' }
-    & Pick<User, '_id' | 'nickname'>
+    & Pick<User, 'id' | 'nickname'>
   )> }
 );
 
@@ -241,27 +202,14 @@ export type GameSubscriptionSubscription = (
   { __typename?: 'Subscription' }
   & { gameSubscription: (
     { __typename?: 'Game' }
-    & Pick<Game, '_id' | 'whoWon' | 'whoseMove' | 'gameBoard' | 'messagesId'>
+    & Pick<Game, 'id' | 'whoWon' | 'whoseMove' | 'gameBoard' | 'messages' | 'gameUUID'>
     & { user1: (
       { __typename?: 'User' }
-      & Pick<User, '_id' | 'nickname'>
+      & Pick<User, 'id' | 'nickname'>
     ), user2?: Maybe<(
       { __typename?: 'User' }
-      & Pick<User, '_id' | 'nickname'>
+      & Pick<User, 'id' | 'nickname'>
     )> }
-  ) }
-);
-
-export type MessagesSubscriptionSubscriptionVariables = Exact<{
-  messagesId: Scalars['String'];
-}>;
-
-
-export type MessagesSubscriptionSubscription = (
-  { __typename?: 'Subscription' }
-  & { messagesSubscription: (
-    { __typename?: 'Messages' }
-    & Pick<Messages, '_id' | 'gameId' | 'messages'>
   ) }
 );
 
@@ -269,17 +217,18 @@ export type MessagesSubscriptionSubscription = (
 export const CreateGameDocument = gql`
     mutation CreateGame($googleCaptchaToken: String!) {
   createGame(googleCaptchaToken: $googleCaptchaToken) {
-    _id
+    id
     user1 {
-      _id
+      id
       nickname
     }
     user2 {
-      _id
+      id
       nickname
     }
     gameBoard
     whoseMove
+    gameUUID
   }
 }
     `;
@@ -311,7 +260,7 @@ export type CreateGameMutationOptions = Apollo.BaseMutationOptions<CreateGameMut
 export const CreateUserDocument = gql`
     mutation CreateUser($username: String!) {
   createUser(username: $username) {
-    _id
+    id
     nickname
   }
 }
@@ -344,16 +293,8 @@ export type CreateUserMutationOptions = Apollo.BaseMutationOptions<CreateUserMut
 export const JoinGameDocument = gql`
     mutation JoinGame($gameId: String!) {
   joinGame(gameId: $gameId) {
-    _id
-    gameBoard
-    user1 {
-      _id
-      nickname
-    }
-    user2 {
-      _id
-      nickname
-    }
+    id
+    gameUUID
   }
 }
     `;
@@ -385,7 +326,7 @@ export type JoinGameMutationOptions = Apollo.BaseMutationOptions<JoinGameMutatio
 export const MovePieceDocument = gql`
     mutation MovePiece($gameBoard: [[Int!]!]!, $gameId: String!) {
   movePiece(gameBoard: $gameBoard, gameId: $gameId) {
-    _id
+    id
     gameBoard
   }
 }
@@ -417,8 +358,8 @@ export type MovePieceMutationHookResult = ReturnType<typeof useMovePieceMutation
 export type MovePieceMutationResult = Apollo.MutationResult<MovePieceMutation>;
 export type MovePieceMutationOptions = Apollo.BaseMutationOptions<MovePieceMutation, MovePieceMutationVariables>;
 export const SendMessageDocument = gql`
-    mutation SendMessage($message: String!, $messagesId: String!) {
-  sendMessage(message: $message, messagesId: $messagesId)
+    mutation SendMessage($message: String!, $gameUUID: String!) {
+  sendMessage(message: $message, gameUUID: $gameUUID)
 }
     `;
 export type SendMessageMutationFn = Apollo.MutationFunction<SendMessageMutation, SendMessageMutationVariables>;
@@ -437,7 +378,7 @@ export type SendMessageMutationFn = Apollo.MutationFunction<SendMessageMutation,
  * const [sendMessageMutation, { data, loading, error }] = useSendMessageMutation({
  *   variables: {
  *      message: // value for 'message'
- *      messagesId: // value for 'messagesId'
+ *      gameUUID: // value for 'gameUUID'
  *   },
  * });
  */
@@ -450,19 +391,20 @@ export type SendMessageMutationOptions = Apollo.BaseMutationOptions<SendMessageM
 export const FetchGameInfosDocument = gql`
     query FetchGameInfos($gameId: String!) {
   fetchGameInfos(gameId: $gameId) {
-    _id
-    gameBoard
-    whoseMove
-    whoWon
+    id
     user1 {
-      _id
+      id
       nickname
     }
     user2 {
-      _id
+      id
       nickname
     }
-    messagesId
+    whoWon
+    whoseMove
+    gameBoard
+    messages
+    gameUUID
   }
 }
     `;
@@ -492,43 +434,10 @@ export function useFetchGameInfosLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
 export type FetchGameInfosQueryHookResult = ReturnType<typeof useFetchGameInfosQuery>;
 export type FetchGameInfosLazyQueryHookResult = ReturnType<typeof useFetchGameInfosLazyQuery>;
 export type FetchGameInfosQueryResult = Apollo.QueryResult<FetchGameInfosQuery, FetchGameInfosQueryVariables>;
-export const FetchMessagesDocument = gql`
-    query FetchMessages($messagesId: String!) {
-  fetchMessages(messagesId: $messagesId) {
-    messages
-  }
-}
-    `;
-
-/**
- * __useFetchMessagesQuery__
- *
- * To run a query within a React component, call `useFetchMessagesQuery` and pass it any options that fit your needs.
- * When your component renders, `useFetchMessagesQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useFetchMessagesQuery({
- *   variables: {
- *      messagesId: // value for 'messagesId'
- *   },
- * });
- */
-export function useFetchMessagesQuery(baseOptions: Apollo.QueryHookOptions<FetchMessagesQuery, FetchMessagesQueryVariables>) {
-        return Apollo.useQuery<FetchMessagesQuery, FetchMessagesQueryVariables>(FetchMessagesDocument, baseOptions);
-      }
-export function useFetchMessagesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FetchMessagesQuery, FetchMessagesQueryVariables>) {
-          return Apollo.useLazyQuery<FetchMessagesQuery, FetchMessagesQueryVariables>(FetchMessagesDocument, baseOptions);
-        }
-export type FetchMessagesQueryHookResult = ReturnType<typeof useFetchMessagesQuery>;
-export type FetchMessagesLazyQueryHookResult = ReturnType<typeof useFetchMessagesLazyQuery>;
-export type FetchMessagesQueryResult = Apollo.QueryResult<FetchMessagesQuery, FetchMessagesQueryVariables>;
 export const MeDocument = gql`
     query Me {
   me {
-    _id
+    id
     nickname
   }
 }
@@ -561,19 +470,20 @@ export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
 export const GameSubscriptionDocument = gql`
     subscription GameSubscription($gameId: String!) {
   gameSubscription(gameId: $gameId) {
-    _id
+    id
     user1 {
-      _id
+      id
       nickname
     }
     user2 {
-      _id
+      id
       nickname
     }
     whoWon
     whoseMove
     gameBoard
-    messagesId
+    messages
+    gameUUID
   }
 }
     `;
@@ -599,34 +509,3 @@ export function useGameSubscriptionSubscription(baseOptions: Apollo.Subscription
       }
 export type GameSubscriptionSubscriptionHookResult = ReturnType<typeof useGameSubscriptionSubscription>;
 export type GameSubscriptionSubscriptionResult = Apollo.SubscriptionResult<GameSubscriptionSubscription>;
-export const MessagesSubscriptionDocument = gql`
-    subscription MessagesSubscription($messagesId: String!) {
-  messagesSubscription(messagesId: $messagesId) {
-    _id
-    gameId
-    messages
-  }
-}
-    `;
-
-/**
- * __useMessagesSubscriptionSubscription__
- *
- * To run a query within a React component, call `useMessagesSubscriptionSubscription` and pass it any options that fit your needs.
- * When your component renders, `useMessagesSubscriptionSubscription` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useMessagesSubscriptionSubscription({
- *   variables: {
- *      messagesId: // value for 'messagesId'
- *   },
- * });
- */
-export function useMessagesSubscriptionSubscription(baseOptions: Apollo.SubscriptionHookOptions<MessagesSubscriptionSubscription, MessagesSubscriptionSubscriptionVariables>) {
-        return Apollo.useSubscription<MessagesSubscriptionSubscription, MessagesSubscriptionSubscriptionVariables>(MessagesSubscriptionDocument, baseOptions);
-      }
-export type MessagesSubscriptionSubscriptionHookResult = ReturnType<typeof useMessagesSubscriptionSubscription>;
-export type MessagesSubscriptionSubscriptionResult = Apollo.SubscriptionResult<MessagesSubscriptionSubscription>;

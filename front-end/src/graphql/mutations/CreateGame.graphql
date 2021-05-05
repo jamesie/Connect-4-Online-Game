@@ -1,15 +1,17 @@
-mutation CreateGame($googleCaptchaToken: String!){
+mutation CreateGame($googleCaptchaToken: String!) {
   createGame(googleCaptchaToken: $googleCaptchaToken) {
-    _id
+    id
     user1 {
-      _id
+      id
       nickname
     }
     user2 {
-      _id
+      id
       nickname
     }
     gameBoard
     whoseMove
+        gameUUID
   }
 }
+

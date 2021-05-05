@@ -31,7 +31,7 @@ const index: React.FC<indexProps> = ({}) => {
       await createUser();
       try {
         const res = await createGame({ variables: { googleCaptchaToken: await fetchGCT() } });
-        router.push(`/game/${res.data.createGame._id}`);
+        router.push(`/game/${res.data.createGame.gameUUID}`);
       } catch (error) {
         setErrorMessage(String(error));
       }

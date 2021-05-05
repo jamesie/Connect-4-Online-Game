@@ -1,17 +1,18 @@
-query FetchGameInfos($gameId: String!){
+query FetchGameInfos($gameId: String!) {
   fetchGameInfos(gameId: $gameId) {
-    _id
-    gameBoard
-    whoseMove
-    whoWon
+    id
     user1 {
-      _id
+      id
       nickname
     }
     user2 {
-      _id
+      id
       nickname
     }
-    messagesId
+    whoWon
+    whoseMove
+    gameBoard
+    messages
+    gameUUID
   }
 }
