@@ -18,6 +18,8 @@ import { Game, messageType } from "../entites/Game";
 import { User } from "../entites/User";
 import { MyContext } from "../types";
 import { isAuth } from "../utils/isAuth";
+import fetch from 'cross-fetch';
+require('dotenv').config();
 
 const GAME_INFO = "GAME_BOARD";
 
@@ -102,18 +104,18 @@ export class gameResolver {
     @Arg("googleCaptchaToken") captchaToken: string,
     @PubSub() pubsub: PubSubEngine
   ): Promise<Game | null> {
-    // const secret = process.env.RECAPTCHA_SECRET_KEY;
+     const secret = process.env.RECAPTCHA_SECRET_KEY;
 
-    // const grc = await fetch(
-    //   `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${captchaToken}`,
-    //   { method: "POST" }
-    // );
+     const grc = await fetch(
+       `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${captchaToken}`,
+       { method: "POST" }
+     );
 
-    // const datares = await grc.json()
+     const datares = await grc.json()
 
-    // if (!datares.success) {
-    //   throw new Error("Beep boop ;)");
-    // }
+     if (!datares.success) {
+       throw new Error("Beep boop ;)");
+     }
 
     let game = new Game();
     // GameBoard: 0 means empty, 1 means player1/creator, 2 means joiner of game

@@ -60,8 +60,7 @@ const SidePanelUI: React.FC<SidePanelUIProps> = ({ gameInfo, meInfo, gameId }) =
           <div>
             <text className={styles.whosTurnFont}>No one has joined your game!</text>
             <text className={styles.whosTurnFont}>Send a friend this link:</text>
-            <text className={styles.whosTurnFont}>www.connect4online.xyz/join/</text>
-            <text className={styles.whosTurnFont}>{gameId}</text>
+            <p className={styles.whosTurnFont}>www.connect4online.xyz/join/{gameId}</p>
           </div>
           <CircularProgress color='primary' />
         </>

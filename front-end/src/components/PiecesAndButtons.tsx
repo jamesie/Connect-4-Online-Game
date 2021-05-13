@@ -55,12 +55,14 @@ const PiecesAndButtons: React.FC<PiecesAndButtonsProps> = ({ playerColor }) => {
             });
             setPieces(newArr)
           }}
-          onMouseEnter={(e) => {
+          onMouseEnter={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
             for (let i = 0; i < 7; i++) {
+              //@ts-ignore
               if (hover[i] === true && hover[i] !== parseInt(e.target.name)) {
                 handleHover({
                   ...hover,
                   [i]: false,
+                   //@ts-ignore
                   [parseInt(e.target.name)]: true,
                 });
                 console.log("returning");
@@ -69,14 +71,16 @@ const PiecesAndButtons: React.FC<PiecesAndButtonsProps> = ({ playerColor }) => {
             }
             handleHover({
               ...hover,
+               //@ts-ignore
               [parseInt(e.target.name)]: true,
             });
           }}
           key={i}
           name={String(i)}
-          onMouseLeave={(e) => {
+          onMouseLeave={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
             handleHover({
               ...hover,
+               //@ts-ignore
               [parseInt(e.target.name)]: false,
             });
           }}

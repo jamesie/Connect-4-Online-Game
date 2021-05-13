@@ -54,7 +54,7 @@ const index: React.FC<indexProps> = ({}) => {
         <meta property='og:image' content='https://i.imgur.com/aeNjMa7.png' />
         <meta
           property='og:description'
-          content='A site made for to easily play the classic game of connect 4 with friends and family.'
+          content='A site made for easily playing the classic game of connect 4 with friends and family.'
         />
         <meta name='theme-color' content='#4b7ff6' />
         <meta name='twitter:card' content='summary_large_image' />

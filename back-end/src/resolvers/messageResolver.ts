@@ -50,6 +50,7 @@ export class messagesResolver {
       .set({
         messages: () => `ARRAY[${messagesToString((game as Game).messages)}]`,
       })
+      .where("gameUUID = :gameUUID", { gameUUID: gameId })
       .returning("*")
       .execute();
 

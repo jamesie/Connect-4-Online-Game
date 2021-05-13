@@ -5,12 +5,13 @@ import { WebSocketLink } from "@apollo/client/link/ws";
 import { getMainDefinition } from "@apollo/client/utilities";
 
 const httpLink = new HttpLink({
-  uri: 'http://localhost:4000/graphql',
+  uri: '/graphql/',
   credentials: "include"
 });
 
+
 const wsLink = process.browser ? new WebSocketLink({
-  uri: 'ws://localhost:4000/graphql',
+  uri: `wss://www.connect4online.xyz/graphql/`,
   options: {
     reconnect: true,
     connectionParams : {
@@ -34,7 +35,7 @@ const splitLink = process.browser ? split(
 
 const createClient = (ctx?: NextPageContext) =>
   new ApolloClient({
-    uri: "http://localhost:4000/graphql",
+    uri: `http://www.connect4online.xyz/graphql/`,
     credentials: "include",
     headers: {
       cookie:

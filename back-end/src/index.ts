@@ -21,8 +21,8 @@ const main = async () => {
   const conn = await createConnection({
     type: "postgres",
     database: "connect4online",
-    username: "postgres",
-    password: "password",
+    username: "myuser",
+    password: "mypass",
     logging: true,
     synchronize: true,
     entities: [
@@ -39,7 +39,7 @@ const main = async () => {
   const redis = new Redis();
 
   const corsOptions = {
-    origin: "http://localhost:3000",
+    origin: "https://www.connect4online.xyz",
     credentials: true,
   };
 
@@ -103,6 +103,10 @@ const main = async () => {
     app,
     cors: false,
   });
+
+  app.get('/', (_, res) => {
+    res.send('Welcome!')
+  })
 
   const http = createServer(app);
 

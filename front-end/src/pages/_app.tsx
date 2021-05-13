@@ -26,6 +26,9 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
               name='viewport'
               content='minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover'
             />
+	   <link rel="shortcut icon" href="/static/favicon.ico" />
+           <title>Connect4Online</title>
+           <meta property="og:title" content="Connect4Online" key="title" />
           </Head>
           <Component {...pageProps} />
       </ThemeProvider>
