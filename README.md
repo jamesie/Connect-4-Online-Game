@@ -1,6 +1,6 @@
 # Connect 4 Online
 
-This project was originally created by me (@jamesie) to showcase some skills I've learnt in the past month self learning software engineering. The project is currently deployed to www.connect4online.xyz. It namely uses the following technologies:
+This is my first ever web development project created by me to showcase some skills I've learnt in the past month self learning software engineering. It uses the following technologies:
 * [Typescript](https://github.com/microsoft/TypeScript)
 * [Node.js](https://github.com/nodejs/node)
 * [GraphQL](https://github.com/graphql)
@@ -26,4 +26,3 @@ Currently I'm very busy working on other projects and I've spent too much time a
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
 
-I couldn't care less if you copy pasted everything maybe or maybe not improved the product then profited
